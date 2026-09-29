@@ -60,7 +60,7 @@ dialog::backdrop{background:#0007}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ===== SETUP: paste the two values from Supabase (Project Settings → API) ===== */
-const SB={url:'https://jeyyeqvexpzoylsrdlmk.supabase.co/rest/v1/',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpleXllcXZleHB6b3lsc3JkbG1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1Njk0NTAsImV4cCI6MjEwNjE0NTQ1MH0.a5YtjwWX1D6-Cw8q9PAo0GOxYu6sj41rwNWyv2emh70'};
+const SB={url:'https://jeyyeqvexpzoylsrdlmk.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpleXllcXZleHB6b3lsc3JkbG1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1Njk0NTAsImV4cCI6MjEwNjE0NTQ1MH0.a5YtjwWX1D6-Cw8q9PAo0GOxYu6sj41rwNWyv2emh70'};
 /* ================================================================================ */
 const $=(s,e=document)=>e.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),
 uid=()=>Math.random().toString(36).slice(2,9),today=()=>new Date().toISOString().slice(0,10),
