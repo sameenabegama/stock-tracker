@@ -54,6 +54,13 @@ dialog::backdrop{background:#0007}
 #toast.on{opacity:1}
 .set{display:grid;gap:12px;max-width:560px}.set p{color:var(--mu);margin:0 0 8px}
 @media(max-width:560px){.g{grid-template-columns:1fr}}
+.hb{display:none;border:0;background:none;font-size:20px;line-height:1;color:var(--tx);cursor:pointer;padding:2px 8px;border-radius:6px}
+@media(max-width:640px){
+.hb{display:inline-block}
+nav{display:none;order:10;flex-basis:100%;flex-direction:column;align-items:stretch;overflow-x:visible;gap:3px;margin-top:8px}
+nav.open{display:flex}
+nav a{width:100%;padding:9px 12px}
+}
 @media(max-width:480px){
 header{padding:8px 10px;gap:6px}
 header b{font-size:14px}
@@ -80,7 +87,7 @@ uid=()=>Math.random().toString(36).slice(2,9),today=()=>new Date().toISOString()
 SZ=['XS','S','M','L','XL','XXL','XXXL','Free Size','Custom'],ST=['Unstitched','Stitched','Stitched Without Pant & Duppatta'],
 DS=['Pending','Packed','Dispatched','Out for Delivery','Delivered','Returned'],
 G='in gate',H='Rifah Mam from house',dt=n=>n?new Date(Date.UTC(1899,11,30)+n*864e5).toISOString().slice(0,10):'';
-let D,me,sb,cur='dash',Q={};
+let D,me,sb,cur='dash',Q={},navOpen=false;
 const pr=n=>(D.stock.find(s=>s.name===n)||{}).price||0;
 const M={
 stock:{t:'Stock List',f:[['name','Stock Name','text'],['coll','Collection','text'],['price','Price (Rs.)','number'],['ref','Ref / Description','text']]},
@@ -121,7 +128,7 @@ function theme(){const r=document.documentElement,d=r.dataset.theme==='dark'||(!
 function draw(){
  const opts=a=>a.map(x=>`<option value="${esc(x)}">`).join(''),
  stocks=[...new Set(D.stock.map(s=>s.name))],sizes=[...new Set([...SZ,...D.reg.map(r=>r.size),...D.asg.map(r=>r.size)].filter(Boolean))];
- $('#app').innerHTML=`<header><b>🧵 Rifah's Kaleidoscope</b><nav>${N.filter(([k])=>k!=='staff'||me.role==='admin').map(([k,l])=>`<a class="${k===cur?'on':''}" onclick="go('${k}')">${l}</a>`).join('')}</nav><small style="color:var(--mu)">${esc(me.name)} · ${me.role}</small><button class="gh" onclick="theme()" title="Light / dark">◐</button><button class="gh" onclick="logout()">Log out</button></header><main>${cur==='dash'?dash():cur==='set'?sett():list(cur)}</main><datalist id="stocks">${opts(stocks)}</datalist><datalist id="stitch">${opts(ST)}</datalist><datalist id="sizes">${opts(sizes)}</datalist>`}
+ $('#app').innerHTML=`<header><b>🧵 Rifah's Kaleidoscope</b><button class="hb" onclick="navOpen=!navOpen;draw()" aria-label="Menu">☰</button><nav id="mnav" class="${navOpen?'open':''}">${N.filter(([k])=>k!=='staff'||me.role==='admin').map(([k,l])=>`<a class="${k===cur?'on':''}" onclick="navOpen=false;go('${k}')">${l}</a>`).join('')}</nav><small style="color:var(--mu)">${esc(me.name)} · ${me.role}</small><button class="gh" onclick="theme()" title="Light / dark">◐</button><button class="gh" onclick="logout()">Log out</button></header><main>${cur==='dash'?dash():cur==='set'?sett():list(cur)}</main><datalist id="stocks">${opts(stocks)}</datalist><datalist id="stitch">${opts(ST)}</datalist><datalist id="sizes">${opts(sizes)}</datalist>`}
 function dash(){
  const sm=(a,k)=>a.reduce((t,r)=>t+(+r[k]||0),0),tin=sm(D.reg,'in'),tout=sm(D.reg,'out'),
  open=D.del.filter(r=>!['Delivered','Returned'].includes(r.status)),od=open.filter(r=>r.exp&&r.exp<today()),by={};
