@@ -41,7 +41,9 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--ac2)}
 .br b{text-align:right}
 .b{padding:2px 9px;border-radius:99px;font-size:12px;background:var(--ac2);color:var(--ac)}
 .s0{color:var(--wn)}.s4{color:var(--ok)}.s5{color:var(--er)}
-dialog{border:1px solid var(--bd);border-radius:14px;background:var(--card);color:var(--tx);width:min(560px,94vw);padding:18px}
+dialog{border:1px solid var(--bd);border-radius:14px;background:var(--card);color:var(--tx);width:min(620px,94vw);padding:18px;max-height:88vh;overflow-y:auto}
+.itemcard{border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:8px;background:var(--bg)}
+.itemcard .g{grid-template-columns:1fr 1fr;margin:0 0 8px}
 dialog::backdrop{background:#0007}
 .g{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
 .g label{font-size:12px;color:var(--mu);display:block}.g .f{grid-column:1/-1}
@@ -102,7 +104,8 @@ const s='Stitched',R=[[46286,'Indigo Bloom','Unstitched','Custom',H,H,46288,11,1
 const A=[['Thevar Sneha','Unstitched','Custom'],['Sivaranjani Rajendran',s,'S'],['Jhanvi Chitturi',s,'L'],['Shyamala Garnepudi',s,'S']];
 return{stock:S.map(([name,price,ref])=>({id:uid(),name,coll:'KOTA DORIYA',price,ref})),
 reg:R.map(a=>({id:uid(),date:dt(a[0]),name:a[1],stitch:a[2],size:a[3],from:a[4],to:a[5],dd:dt(a[6]),in:a[7],out:a[8]})),
-asg:A.map(a=>({id:uid(),date:dt(46287),cust:a[0],name:'Gul-E-Aasman',stitch:a[1],size:a[2],qty:1,notes:'Completed'})),del:[]}}
+asg:A.map(a=>({id:uid(),date:dt(46287),cust:a[0],items:[{name:'Gul-E-Aasman',stitch:a[1],size:a[2],qty:1,notes:'Completed'}]})),del:[]}}
+function migrateAsg(){let ch=false;D.asg=D.asg.map(r=>{if(r.items)return r;ch=true;return{id:r.id,date:r.date,cust:r.cust,items:[{name:r.name||'',stitch:r.stitch||'',size:r.size||'',qty:r.qty||1,notes:r.notes||''}],by:r.by,at:r.at}});return ch}
 
 /* ---------- storage (Supabase table "kv") ---------- */
 async function load(k){const{data,error}=await sb.from('kv').select('j').eq('k',k).maybeSingle();if(error)throw error;return data?JSON.parse(data.j):null}
@@ -117,7 +120,7 @@ function loginView(){$('#app').innerHTML=`<div class="lg"><div class="card"><h1>
  $('#go').onclick=doAuth;document.querySelectorAll('.lg input').forEach(i=>i.onkeydown=e=>{if(e.key==='Enter')doAuth()});$('#u').focus()}
 async function doAuth(){const{data,error}=await sb.auth.signInWithPassword({email:$('#u').value.trim(),password:$('#p').value});if(error)return $('#er').textContent='Wrong email or password.';await start(data.user)}
 async function start(u){me=mk(u);
- try{D=await load('data');if(!D){D=seed();await save('data',D)}}
+ try{D=await load('data');if(!D){D=seed();await save('data',D)}else if(migrateAsg())await save('data',D)}
  catch(e){$('#app').innerHTML='<div class="lg"><div class="card"><h1>Couldn’t reach the database</h1><p>Nothing was changed. Check your internet and the setup steps in the README, then retry.</p><button class="pr" onclick="location.reload()">Retry</button></div></div>';return}
  go('dash')}
 async function logout(){await sb.auth.signOut();me=null;loginView()} // data stays in the database
@@ -135,8 +138,8 @@ function dash(){
  D.reg.forEach(r=>by[r.name]=(by[r.name]||0)+(+r.in||0)-(+r.out||0));
  const top=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,8),mx=Math.max(1,...top.map(t=>t[1])),
  cnt=DS.map(s=>[s,D.del.filter(r=>r.status===s).length]),cm=Math.max(1,...cnt.map(c=>c[1])),
- val=D.asg.reduce((t,r)=>t+(+r.qty||0)*pr(r.name),0),
- K=[['Designs in catalogue',D.stock.length],['Units in holding',tin-tout],['Units received',tin],['Units sent out',tout],['Units assigned',sm(D.asg,'qty')],['Assigned value','Rs. '+val.toLocaleString('en-IN')],['Open deliveries',open.length],['Overdue deliveries',od.length]],
+ asgIt=D.asg.flatMap(r=>r.items||[]),unitsAsg=asgIt.reduce((t,it)=>t+(+it.qty||0),0),val=asgIt.reduce((t,it)=>t+(+it.qty||0)*pr(it.name),0),
+ K=[['Designs in catalogue',D.stock.length],['Units in holding',tin-tout],['Units received',tin],['Units sent out',tout],['Units assigned',unitsAsg],['Assigned value','Rs. '+val.toLocaleString('en-IN')],['Open deliveries',open.length],['Overdue deliveries',od.length]],
  bar=(l,v,m)=>`<div class="br"><span title="${esc(l)}">${esc(l)}</span><i><u style="width:${Math.max(0,v)/m*100}%"></u></i><b>${v}</b></div>`,
  rec=[...D.reg].sort((a,b)=>(b.date||'')<(a.date||'')?-1:1).slice(0,5);
  return`<div class="k">${K.map(([l,v])=>`<div class="card"><small>${l}</small><div>${v}</div></div>`).join('')}</div>
@@ -145,8 +148,8 @@ function dash(){
 <div class="two"><div class="card"><h3>⚠ Overdue deliveries</h3>${od.length?od.map(r=>`<div>${esc(r.cust)} — due ${esc(r.exp)} <span class="b s0">${esc(r.status)}</span></div>`).join(''):'<div class="em">Nothing overdue 🎉</div>'}</div>
 <div class="card"><h3>Latest register entries</h3>${rec.map(r=>`<div>${esc(r.date)} · ${esc(r.name)} · ${esc(r.size)} · ${esc(r.stitch)}</div>`).join('')||'<div class="em">Empty</div>'}</div></div>`}
 function list(m){const c=M[m];
- return`<div class="tb"><h2>${c.t}</h2><input id="q" placeholder="Search…" value="${esc(Q[m]||'')}" oninput="Q['${m}']=this.value;$('#tb').innerHTML=tbl('${m}')"><button class="pr" onclick="edit('${m}')">+ Add</button><button onclick="csv('${m}')">Export CSV</button></div><div class="w" id="tb">${tbl(m)}</div>`}
-function tbl(m){const c=M[m],q=(Q[m]||'').toLowerCase(),hasD=c.f[0][2]==='date',
+ return`<div class="tb"><h2>${c.t}</h2><input id="q" placeholder="Search…" value="${esc(Q[m]||'')}" oninput="Q['${m}']=this.value;$('#tb').innerHTML=tbl('${m}')"><button class="pr" onclick="${m==='asg'?'asgEdit()':`edit('${m}')`}">+ Add</button><button onclick="csv('${m}')">Export CSV</button></div><div class="w" id="tb">${tbl(m)}</div>`}
+function tbl(m){if(m==='asg')return asgTbl();const c=M[m],q=(Q[m]||'').toLowerCase(),hasD=c.f[0][2]==='date',
  rows=D[m].filter(r=>!q||Object.values(r).join(' ').toLowerCase().includes(q)).sort((a,b)=>hasD?((b.date||'')<(a.date||'')?-1:1):String(a.name).localeCompare(b.name));
  if(!rows.length)return`<div class="em">${D[m].length?'No matches.':'Nothing here yet — click “+ Add”.'}</div>`;
  return`<table><thead><tr>${c.f.map(f=>`<th>${f[1]}</th>`).join('')}${c.x?`<th>${c.x[0]}</th>`:''}</tr></thead><tbody>${rows.map(r=>`<tr onclick="edit('${m}','${r.id}')">${c.f.map(([k])=>`<td>${k==='status'&&r[k]?`<span class="b s${DS.indexOf(r[k])}">${esc(r[k])}</span>`:esc(r[k])}</td>`).join('')}${c.x?`<td><b>${c.x[1](r)}</b></td>`:''}</tr>`).join('')}</tbody></table>`}
@@ -161,11 +164,46 @@ async function sv(m,id){const c=M[m],v={};
  v.by=me.name;v.at=today();
  await mut(()=>{const r=id&&D[m].find(x=>x.id===id);if(r)Object.assign(r,v);else D[m].push({id:id||uid(),...v})});
  $('#dlg').close();draw()}
+function asgTotal(items){return items.reduce((t,it)=>t+(+it.qty||0)*pr(it.name),0)}
+function asgTbl(){const q=(Q.asg||'').toLowerCase();
+ let rows=D.asg.filter(r=>!q||(r.cust+' '+r.date+' '+(r.items||[]).map(it=>it.name+' '+it.stitch+' '+it.size+' '+it.notes).join(' ')).toLowerCase().includes(q));
+ rows=[...rows].sort((a,b)=>(b.date||'')<(a.date||'')?-1:1);
+ if(!rows.length)return`<div class="em">${D.asg.length?'No matches.':'Nothing here yet — click “+ Add”.'}</div>`;
+ return`<table><thead><tr><th>Date</th><th>Customer</th><th>Items</th><th>Total Qty</th><th>Amount (Rs.)</th></tr></thead><tbody>${rows.map(r=>{const items=r.items||[],qty=items.reduce((t,it)=>t+(+it.qty||0),0),amt=asgTotal(items),summary=items.map(it=>`${esc(it.name)}${it.size?' ('+esc(it.size)+')':''} ×${it.qty}`).join(', ');return`<tr onclick="asgEdit('${r.id}')"><td>${esc(r.date)}</td><td>${esc(r.cust)}</td><td>${summary}</td><td>${qty}</td><td><b>${amt.toLocaleString('en-IN')}</b></td></tr>`}).join('')}</tbody></table>`}
+let draftItems=[];
+function blankItem(){return{name:'',stitch:'',size:'',qty:1,notes:''}}
+function asgEdit(id){const r=id?D.asg.find(x=>x.id===id):{date:today(),cust:''};
+ draftItems=id?r.items.map(x=>({...x})):[blankItem()];
+ $('#dlg').innerHTML=asgForm(r,id);
+ if($('#adx'))$('#adx').onclick=async e=>{if(!e.target.dataset.c){e.target.dataset.c=1;e.target.textContent='Click again to delete';return}
+  await mut(()=>{D.asg=D.asg.filter(x=>x.id!==id)});$('#dlg').close();draw()};
+ $('#dlg').showModal()}
+function itemRow(it,i){return`<div class="itemcard"><div class="g"><div><label>Stock Name</label><input value="${esc(it.name)}" list="stocks" oninput="draftItems[${i}].name=this.value;updTotal()"></div><div><label>Stitch Type</label><input value="${esc(it.stitch)}" list="stitch" oninput="draftItems[${i}].stitch=this.value"></div><div><label>Size</label><input value="${esc(it.size)}" list="sizes" oninput="draftItems[${i}].size=this.value"></div><div><label>Qty</label><input type="number" min="1" value="${it.qty}" oninput="draftItems[${i}].qty=+this.value||0;updTotal()"></div><div class="f"><label>Notes</label><input value="${esc(it.notes)}" oninput="draftItems[${i}].notes=this.value"></div></div><button type="button" class="dg gh" style="padding:2px 4px" onclick="rmItem(${i})">✕ Remove this item</button></div>`}
+function asgForm(r,id){return`<h3 style="margin:0 0 4px">${id?'Edit':'Add'} · Delivery Assignment</h3><p style="color:var(--mu);margin:0 0 10px;font-size:13px">One customer, one or more stock items.</p>
+<div class="g"><div><label>Date</label><input id="af_date" type="date" value="${esc(r.date||today())}"></div><div><label>Customer Name</label><input id="af_cust" value="${esc(r.cust||'')}"></div></div>
+<div id="items">${draftItems.map((it,i)=>itemRow(it,i)).join('')}</div>
+<button type="button" onclick="addItem()">+ Add another stock item</button>
+<div id="asgTotalLine" style="text-align:right;margin-top:10px;font-weight:600">Total: Rs. ${asgTotal(draftItems).toLocaleString('en-IN')}</div>
+${r.by?`<p style="font-size:12px;color:var(--mu);margin:8px 0 0">Last saved by ${esc(r.by)} · ${esc(r.at)}</p>`:''}
+<div class="r" style="margin-top:12px">${id&&me.role==='admin'?'<button class="dg sp" id="adx">Delete</button>':''}<button onclick="$(\'#dlg\').close()">Cancel</button><button class="pr" onclick="asgSave(\'${id||''}\')">Save</button></div>`}
+function addItem(){draftItems.push(blankItem());refreshItems()}
+function rmItem(i){draftItems.splice(i,1);if(!draftItems.length)draftItems.push(blankItem());refreshItems()}
+function refreshItems(){$('#items').innerHTML=draftItems.map((it,i)=>itemRow(it,i)).join('');updTotal()}
+function updTotal(){const t=$('#asgTotalLine');if(t)t.textContent='Total: Rs. '+asgTotal(draftItems).toLocaleString('en-IN')}
+async function asgSave(id){const date=$('#af_date').value,cust=$('#af_cust').value.trim();
+ if(!cust)return toast('Please enter the customer name');
+ const items=draftItems.filter(it=>it.name.trim());
+ if(!items.length)return toast('Add at least one stock item');
+ const v={date,cust,items,by:me.name,at:today()};
+ await mut(()=>{const r=id&&D.asg.find(x=>x.id===id);if(r)Object.assign(r,v);else D.asg.push({id:id||uid(),...v})});
+ $('#dlg').close();draw()}
 function sett(){return`<div class="set"><h2>Settings</h2>
 <div class="card"><h3>Data storage</h3><p>✅ Data is saved in your Supabase database. It stays put when you log out, refresh, or open the site on another device.</p>${me.role==='admin'?'<button onclick="backup()">Download full backup (.json)</button> <button onclick="$(\'#rf\').click()">Restore from backup</button><input id="rf" type="file" accept=".json" hidden onchange="restore(this)">':''}</div>
 <div class="card"><h3>Change my password</h3><input id="np" type="password" placeholder="New password (6+ characters)"><br><br><button onclick="chpw()">Update password</button></div></div>`}
 function dl(name,data){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data]));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1e3)}
-function csv(m){const c=M[m],q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';dl(m+'.csv',[c.f.map(f=>f[1]),...D[m].map(r=>c.f.map(f=>r[f[0]]))].map(r=>r.map(q).join(',')).join('\n'))}
+function csv(m){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+ if(m==='asg'){const rows=[['Date','Customer Name','Stock Name','Stitch Type','Size','Qty','Notes','Amount (Rs.)']];D.asg.forEach(r=>(r.items||[]).forEach(it=>rows.push([r.date,r.cust,it.name,it.stitch,it.size,it.qty,it.notes,(+it.qty||0)*pr(it.name)])));return dl('asg.csv',rows.map(r=>r.map(q).join(',')).join('\n'))}
+ const c=M[m];dl(m+'.csv',[c.f.map(f=>f[1]),...D[m].map(r=>c.f.map(f=>r[f[0]]))].map(r=>r.map(q).join(',')).join('\n'))}
 const backup=()=>dl('rifahs-backup-'+today()+'.json',JSON.stringify(D,null,1));
 function restore(i){const f=i.files[0];if(!f)return;const rd=new FileReader();rd.onload=async()=>{try{const o=JSON.parse(rd.result);if(!['stock','reg','asg','del'].every(k=>Array.isArray(o[k])))throw 0;D=o;await persist();toast('Backup restored');draw()}catch(e){toast('That file is not a valid backup')}};rd.readAsText(f)}
 async function chpw(){const p=$('#np').value;if(p.length<6)return toast('Use at least 6 characters');const{error}=await sb.auth.updateUser({password:p});toast(error?error.message:'Password updated');$('#np').value=''}
