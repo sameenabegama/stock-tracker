@@ -146,16 +146,15 @@ function dash(){
  D.reg.forEach(r=>{const net=(+r.in||0)-(+r.out||0);
   if(r.stitch==='Unstitched')holdU+=net;else holdS+=net;
   if(net>0){if(r.status==='Packed')packedQ+=net;else unpackedQ+=net}});
- // stock currently sitting at each named place (Delivered To adds, Received From removes)
- const loc={};
- D.reg.forEach(r=>{const to=(r.to||'').trim(),from=(r.from||'').trim();if(to)loc[to]=(loc[to]||0)+(+r.out||0);if(from)loc[from]=(loc[from]||0)-(+r.in||0)});
- const locEntries=Object.entries(loc).filter(([,v])=>v!==0).sort((a,b)=>b[1]-a[1]),
- mxLoc=Math.max(1,...locEntries.map(l=>Math.abs(l[1])));
- const K=[['Designs in catalogue',D.stock.length],['Holding · Stitched',holdS],['Holding · Unstitched',holdU],['Packed',packedQ],['Unpacked',unpackedQ],['Units received',tin],['Units sent out',tout],['Assigned value','Rs. '+val.toLocaleString('en-IN')],['Open deliveries',open.length],['Overdue deliveries',od.length]];
+ // stock currently at the Stitching Unit only: qty sent there minus qty received back from there
+ let stitchUnit=0;
+ D.reg.forEach(r=>{const to=(r.to||'').trim().toLowerCase(),from=(r.from||'').trim().toLowerCase();
+  if(to==='stitching unit')stitchUnit+=(+r.out||0);
+  if(from==='stitching unit')stitchUnit-=(+r.in||0)});
+ const K=[['Designs in catalogue',D.stock.length],['Holding · Stitched',holdS],['Holding · Unstitched',holdU],['Holding · Stitching Unit',stitchUnit],['Packed',packedQ],['Unpacked',unpackedQ],['Units received',tin],['Units sent out',tout],['Assigned value','Rs. '+val.toLocaleString('en-IN')],['Open deliveries',open.length],['Overdue deliveries',od.length]];
  return`<div class="k">${K.map(([l,v])=>`<div class="card"><small>${l}</small><div>${v}</div></div>`).join('')}</div>
 <div class="two"><div class="card"><h3>Holding by design</h3>${top.length?top.map(t=>bar(t[0],t[1],mx)).join(''):'<div class="em">No register entries yet</div>'}</div>
 <div class="card"><h3>Deliveries by status</h3>${cnt.map(c=>bar(c[0],c[1],cm)).join('')}</div></div>
-<div class="card"><h3>📍 Stock by location</h3>${locEntries.length?locEntries.map(l=>bar(l[0],l[1],mxLoc)).join(''):'<div class="em">No transfers logged yet</div>'}</div>
 <div class="two"><div class="card"><h3>⚠ Overdue deliveries</h3>${od.length?od.map(r=>`<div>${esc(r.cust)} — due ${esc(r.exp)} <span class="b s0">${esc(r.status)}</span></div>`).join(''):'<div class="em">Nothing overdue 🎉</div>'}</div>
 <div class="card"><h3>Latest register entries</h3>${rec.map(r=>`<div>${esc(r.date)} · ${esc(r.name)} · ${esc(r.size)} · ${esc(r.stitch)}${r.status==='Packed'?' · <span style="color:var(--ok)">Packed</span>':''}</div>`).join('')||'<div class="em">Empty</div>'}</div></div>`}
 function list(m){const c=M[m];
