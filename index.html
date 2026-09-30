@@ -148,7 +148,7 @@ function dash(){
   if(net>0){if(r.status==='Packed')packedQ+=net;else unpackedQ+=net}});
  // stock currently sitting at each named place (Delivered To adds, Received From removes)
  const loc={};
- D.reg.forEach(r=>{if(r.to)loc[r.to]=(loc[r.to]||0)+(+r.out||0);if(r.from)loc[r.from]=(loc[r.from]||0)-(+r.in||0)});
+ D.reg.forEach(r=>{const to=(r.to||'').trim(),from=(r.from||'').trim();if(to)loc[to]=(loc[to]||0)+(+r.out||0);if(from)loc[from]=(loc[from]||0)-(+r.in||0)});
  const locEntries=Object.entries(loc).filter(([,v])=>v!==0).sort((a,b)=>b[1]-a[1]),
  mxLoc=Math.max(1,...locEntries.map(l=>Math.abs(l[1])));
  const K=[['Designs in catalogue',D.stock.length],['Holding · Stitched',holdS],['Holding · Unstitched',holdU],['Packed',packedQ],['Unpacked',unpackedQ],['Units received',tin],['Units sent out',tout],['Assigned value','Rs. '+val.toLocaleString('en-IN')],['Open deliveries',open.length],['Overdue deliveries',od.length]];
