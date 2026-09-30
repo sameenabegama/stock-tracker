@@ -162,7 +162,17 @@ function list(m){const c=M[m];
 function tbl(m){if(m==='asg')return asgTbl();const c=M[m],q=(Q[m]||'').toLowerCase(),hasD=c.f[0][2]==='date',
  rows=D[m].filter(r=>!q||Object.values(r).join(' ').toLowerCase().includes(q)).sort((a,b)=>hasD?((b.date||'')<(a.date||'')?-1:1):String(a.name).localeCompare(b.name));
  if(!rows.length)return`<div class="em">${D[m].length?'No matches.':'Nothing here yet — click “+ Add”.'}</div>`;
- return`<table><thead><tr>${c.f.map(f=>`<th>${f[1]}</th>`).join('')}${c.x?`<th>${c.x[0]}</th>`:''}</tr></thead><tbody>${rows.map(r=>`<tr onclick="edit('${m}','${r.id}')">${c.f.map(([k,,t])=>{if(k==='status')return m==='del'?`<td>${r[k]?`<span class="b s${DS.indexOf(r[k])}">${esc(r[k])}</span>`:''}</td>`:`<td>${r[k]==='Packed'?'<span class="b" style="color:var(--ok)">Packed</span>':'<span style="color:var(--mu)">Unpacked</span>'}</td>`;if(t==='image')return `<td>${r[k]?`<img src="${esc(r[k])}" style="width:34px;height:34px;object-fit:cover;border-radius:6px;vertical-align:middle">`:'—'}</td>`;return `<td>${esc(r[k])}</td>`}).join('')}${c.x?`<td><b>${c.x[1](r)}</b></td>`:''}</tr>`).join('')}</tbody></table>`}
+ return`<table><thead><tr>${c.f.map(f=>`<th>${f[1]}</th>`).join('')}${c.x?`<th>${c.x[0]}</th>`:''}${m==='stock'?'<th></th>':''}</tr></thead><tbody>${rows.map(r=>{
+ const click=m==='stock'?`ondblclick="edit('${m}','${r.id}')"`:`onclick="edit('${m}','${r.id}')"`;
+ const tds=c.f.map(([k,,t])=>{
+  if(k==='status')return m==='del'?`<td>${r[k]?`<span class="b s${DS.indexOf(r[k])}">${esc(r[k])}</span>`:''}</td>`:`<td>${r[k]==='Packed'?'<span class="b" style="color:var(--ok)">Packed</span>':'<span style="color:var(--mu)">Unpacked</span>'}</td>`;
+  if(t==='image')return `<td>${r[k]?`<img src="${esc(r[k])}" style="width:34px;height:34px;object-fit:cover;border-radius:6px;vertical-align:middle">`:'—'}</td>`;
+  if(m==='stock'&&k==='name')return `<td onclick="event.stopPropagation();showImgFor('${r.id}')" style="cursor:zoom-in;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px">${esc(r[k])}</td>`;
+  return `<td>${esc(r[k])}</td>`}).join('');
+ return `<tr ${click}>${tds}${c.x?`<td><b>${c.x[1](r)}</b></td>`:''}${m==='stock'?`<td><button class="gh" onclick="event.stopPropagation();edit('stock','${r.id}')" style="padding:3px 10px;border:1px solid var(--bd);border-radius:6px">Edit</button></td>`:''}</tr>`}).join('')}</tbody></table>`}
+function showImgFor(id){const r=D.stock.find(x=>x.id===id);if(!r)return;if(!r.image){toast('No photo added yet — double-click the row to add one');return}
+ $('#dlg').innerHTML=`<h3 style="margin:0 0 10px">${esc(r.name)}</h3><img src="${esc(r.image)}" style="max-width:100%;border-radius:10px;display:block;margin:0 auto"><div class="r" style="margin-top:14px"><button class="pr" onclick="$('#dlg').close()">Close</button></div>`;
+ $('#dlg').showModal()}
 function fieldHTML(k,l,t,dl,r){
  if(t==='select'){const opts=Array.isArray(dl)?dl:DS;return `<div><label>${l}</label><select id="f_${k}">${opts.map(o=>`<option value="${esc(o)}"${o===(r[k]||'')?' selected':''}>${o===''?'— Unpacked —':esc(o)}</option>`).join('')}</select></div>`}
  if(t==='image')return `<div class="f" id="imgwrap" data-rm="0"><label>${l}</label>${r[k]?`<div id="imgprev"><img src="${esc(r[k])}" style="max-width:140px;max-height:140px;border-radius:8px;display:block;margin-bottom:6px"></div><button type="button" class="gh dg" onclick="$('#imgwrap').dataset.rm='1';$('#imgprev')&&$('#imgprev').remove();this.remove()">Remove photo</button>`:''}<input id="f_${k}" type="file" accept="image/*" style="margin-top:6px"><small style="color:var(--mu);display:block;margin-top:4px">Optional — upload a photo if you have one.</small></div>`
