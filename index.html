@@ -92,8 +92,8 @@ G='in gate',H='Rifah Mam from house',dt=n=>n?new Date(Date.UTC(1899,11,30)+n*864
 let D,me,sb,cur='dash',Q={},navOpen=false;
 const pr=n=>(D.stock.find(s=>s.name===n)||{}).price||0;
 const M={
-stock:{t:'Stock List',f:[['name','Stock Name','text'],['coll','Collection','text'],['price','Price (Rs.)','number'],['ref','Ref / Description','text']]},
-reg:{t:'Stock Register',f:[['date','Date','date'],['name','Stock Name','text','stocks'],['stitch','Stitch Type','text','stitch'],['size','Size','text','sizes'],['from','Received From','text'],['to','Delivered To','text'],['dd','Date Delivered','date'],['in','Qty In','number'],['out','Qty Out','number']],x:['Holding',r=>(+r.in||0)-(+r.out||0)]},
+stock:{t:'Stock List',f:[['name','Stock Name','text'],['coll','Collection','text'],['price','Price (Rs.)','number'],['ref','Ref / Description','text'],['image','Photo (optional)','image']]},
+reg:{t:'Stock Register',f:[['date','Date','date'],['name','Stock Name','text','stocks'],['stitch','Stitch Type','text','stitch'],['size','Size','text','sizes'],['from','Received From','text'],['to','Delivered To','text'],['dd','Date Delivered','date'],['in','Qty In','number'],['out','Qty Out','number'],['status','Status','select',['','Packed']]],x:['Holding',r=>(+r.in||0)-(+r.out||0)]},
 asg:{t:'Delivery Assignment',f:[['date','Date','date'],['cust','Customer Name','text'],['name','Stock Name','text','stocks'],['stitch','Stitch Type','text','stitch'],['size','Size','text','sizes'],['qty','Qty','number'],['notes','Notes','text']],x:['Amount (Rs.)',r=>(+r.qty||0)*pr(r.name)]},
 del:{t:'Delivery Details',f:[['date','Date','date'],['cust','Customer Name','text'],['phone','Phone Number','tel'],['addr','Delivery Address','textarea'],['track','Courier / Tracking No.','text'],['disp','Dispatch Date','date'],['exp','Expected Delivery','date'],['status','Status','select'],['on','Delivered On','date']]}};
 const N=[['dash','Dashboard'],['stock','Stock List'],['reg','Stock Register'],['asg','Assignments'],['del','Deliveries'],['set','Settings']];
@@ -138,29 +138,53 @@ function dash(){
  D.reg.forEach(r=>by[r.name]=(by[r.name]||0)+(+r.in||0)-(+r.out||0));
  const top=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,8),mx=Math.max(1,...top.map(t=>t[1])),
  cnt=DS.map(s=>[s,D.del.filter(r=>r.status===s).length]),cm=Math.max(1,...cnt.map(c=>c[1])),
- asgIt=D.asg.flatMap(r=>r.items||[]),unitsAsg=asgIt.reduce((t,it)=>t+(+it.qty||0),0),val=asgIt.reduce((t,it)=>t+(+it.qty||0)*pr(it.name),0),
- K=[['Designs in catalogue',D.stock.length],['Units in holding',tin-tout],['Units received',tin],['Units sent out',tout],['Units assigned',unitsAsg],['Assigned value','Rs. '+val.toLocaleString('en-IN')],['Open deliveries',open.length],['Overdue deliveries',od.length]],
+ asgIt=D.asg.flatMap(r=>r.items||[]),val=asgIt.reduce((t,it)=>t+(+it.qty||0)*pr(it.name),0),
  bar=(l,v,m)=>`<div class="br"><span title="${esc(l)}">${esc(l)}</span><i><u style="width:${Math.max(0,v)/m*100}%"></u></i><b>${v}</b></div>`,
  rec=[...D.reg].sort((a,b)=>(b.date||'')<(a.date||'')?-1:1).slice(0,5);
+ // holding split by stitch type, and packed vs unpacked (only counting stock still currently held — net holding > 0)
+ let holdS=0,holdU=0,packedQ=0,unpackedQ=0;
+ D.reg.forEach(r=>{const net=(+r.in||0)-(+r.out||0);
+  if(r.stitch==='Unstitched')holdU+=net;else holdS+=net;
+  if(net>0){if(r.status==='Packed')packedQ+=net;else unpackedQ+=net}});
+ // stock currently sitting at each named place (Delivered To adds, Received From removes)
+ const loc={};
+ D.reg.forEach(r=>{if(r.to)loc[r.to]=(loc[r.to]||0)+(+r.out||0);if(r.from)loc[r.from]=(loc[r.from]||0)-(+r.in||0)});
+ const locEntries=Object.entries(loc).filter(([,v])=>v!==0).sort((a,b)=>b[1]-a[1]),
+ mxLoc=Math.max(1,...locEntries.map(l=>Math.abs(l[1])));
+ const K=[['Designs in catalogue',D.stock.length],['Holding · Stitched',holdS],['Holding · Unstitched',holdU],['Packed',packedQ],['Unpacked',unpackedQ],['Units received',tin],['Units sent out',tout],['Assigned value','Rs. '+val.toLocaleString('en-IN')],['Open deliveries',open.length],['Overdue deliveries',od.length]];
  return`<div class="k">${K.map(([l,v])=>`<div class="card"><small>${l}</small><div>${v}</div></div>`).join('')}</div>
 <div class="two"><div class="card"><h3>Holding by design</h3>${top.length?top.map(t=>bar(t[0],t[1],mx)).join(''):'<div class="em">No register entries yet</div>'}</div>
 <div class="card"><h3>Deliveries by status</h3>${cnt.map(c=>bar(c[0],c[1],cm)).join('')}</div></div>
+<div class="card"><h3>📍 Stock by location</h3>${locEntries.length?locEntries.map(l=>bar(l[0],l[1],mxLoc)).join(''):'<div class="em">No transfers logged yet</div>'}</div>
 <div class="two"><div class="card"><h3>⚠ Overdue deliveries</h3>${od.length?od.map(r=>`<div>${esc(r.cust)} — due ${esc(r.exp)} <span class="b s0">${esc(r.status)}</span></div>`).join(''):'<div class="em">Nothing overdue 🎉</div>'}</div>
-<div class="card"><h3>Latest register entries</h3>${rec.map(r=>`<div>${esc(r.date)} · ${esc(r.name)} · ${esc(r.size)} · ${esc(r.stitch)}</div>`).join('')||'<div class="em">Empty</div>'}</div></div>`}
+<div class="card"><h3>Latest register entries</h3>${rec.map(r=>`<div>${esc(r.date)} · ${esc(r.name)} · ${esc(r.size)} · ${esc(r.stitch)}${r.status==='Packed'?' · <span style="color:var(--ok)">Packed</span>':''}</div>`).join('')||'<div class="em">Empty</div>'}</div></div>`}
 function list(m){const c=M[m];
  return`<div class="tb"><h2>${c.t}</h2><input id="q" placeholder="Search…" value="${esc(Q[m]||'')}" oninput="Q['${m}']=this.value;$('#tb').innerHTML=tbl('${m}')"><button class="pr" onclick="${m==='asg'?'asgEdit()':`edit('${m}')`}">+ Add</button><button onclick="csv('${m}')">Export CSV</button></div><div class="w" id="tb">${tbl(m)}</div>`}
 function tbl(m){if(m==='asg')return asgTbl();const c=M[m],q=(Q[m]||'').toLowerCase(),hasD=c.f[0][2]==='date',
  rows=D[m].filter(r=>!q||Object.values(r).join(' ').toLowerCase().includes(q)).sort((a,b)=>hasD?((b.date||'')<(a.date||'')?-1:1):String(a.name).localeCompare(b.name));
  if(!rows.length)return`<div class="em">${D[m].length?'No matches.':'Nothing here yet — click “+ Add”.'}</div>`;
- return`<table><thead><tr>${c.f.map(f=>`<th>${f[1]}</th>`).join('')}${c.x?`<th>${c.x[0]}</th>`:''}</tr></thead><tbody>${rows.map(r=>`<tr onclick="edit('${m}','${r.id}')">${c.f.map(([k])=>`<td>${k==='status'&&r[k]?`<span class="b s${DS.indexOf(r[k])}">${esc(r[k])}</span>`:esc(r[k])}</td>`).join('')}${c.x?`<td><b>${c.x[1](r)}</b></td>`:''}</tr>`).join('')}</tbody></table>`}
+ return`<table><thead><tr>${c.f.map(f=>`<th>${f[1]}</th>`).join('')}${c.x?`<th>${c.x[0]}</th>`:''}</tr></thead><tbody>${rows.map(r=>`<tr onclick="edit('${m}','${r.id}')">${c.f.map(([k,,t])=>{if(k==='status')return m==='del'?`<td>${r[k]?`<span class="b s${DS.indexOf(r[k])}">${esc(r[k])}</span>`:''}</td>`:`<td>${r[k]==='Packed'?'<span class="b" style="color:var(--ok)">Packed</span>':'<span style="color:var(--mu)">Unpacked</span>'}</td>`;if(t==='image')return `<td>${r[k]?`<img src="${esc(r[k])}" style="width:34px;height:34px;object-fit:cover;border-radius:6px;vertical-align:middle">`:'—'}</td>`;return `<td>${esc(r[k])}</td>`}).join('')}${c.x?`<td><b>${c.x[1](r)}</b></td>`:''}</tr>`).join('')}</tbody></table>`}
+function fieldHTML(k,l,t,dl,r){
+ if(t==='select'){const opts=Array.isArray(dl)?dl:DS;return `<div><label>${l}</label><select id="f_${k}">${opts.map(o=>`<option value="${esc(o)}"${o===(r[k]||'')?' selected':''}>${o===''?'— Unpacked —':esc(o)}</option>`).join('')}</select></div>`}
+ if(t==='image')return `<div class="f" id="imgwrap" data-rm="0"><label>${l}</label>${r[k]?`<div id="imgprev"><img src="${esc(r[k])}" style="max-width:140px;max-height:140px;border-radius:8px;display:block;margin-bottom:6px"></div><button type="button" class="gh dg" onclick="$('#imgwrap').dataset.rm='1';$('#imgprev')&&$('#imgprev').remove();this.remove()">Remove photo</button>`:''}<input id="f_${k}" type="file" accept="image/*" style="margin-top:6px"><small style="color:var(--mu);display:block;margin-top:4px">Optional — upload a photo if you have one.</small></div>`
+ if(t==='textarea')return `<div class="f"><label>${l}</label><textarea id="f_${k}" rows="2">${esc(r[k])}</textarea></div>`
+ return `<div class="${k==='ref'||k==='addr'?'f':''}"><label>${l}</label><input id="f_${k}" type="${t}" value="${esc(r[k])}"${dl&&!Array.isArray(dl)?` list="${dl}"`:''}></div>`}
 function edit(m,id){const c=M[m],r=id?D[m].find(x=>x.id===id):{date:today(),qty:1,in:1,status:'Pending',coll:'KOTA DORIYA'};
- $('#dlg').innerHTML=`<h3 style="margin:0">${id?'Edit':'Add'} · ${c.t}</h3><div class="g">${c.f.map(([k,l,t,dl])=>`<div class="${t==='textarea'||k==='ref'||k==='addr'?'f':''}"><label>${l}</label>${t==='select'?`<select id="f_${k}">${DS.map(o=>`<option${o===r[k]?' selected':''}>${o}</option>`).join('')}</select>`:t==='textarea'?`<textarea id="f_${k}" rows="2">${esc(r[k])}</textarea>`:`<input id="f_${k}" type="${t}" value="${esc(r[k])}"${dl?` list="${dl}"`:''}>`}</div>`).join('')}</div>${r.by?`<p style="font-size:12px;color:var(--mu);margin:0 0 10px">Last saved by ${esc(r.by)} · ${esc(r.at)}</p>`:''}<div class="r">${id?'<button class="dg sp" id="dx">Delete</button>':''}<button onclick="$(\'#dlg\').close()">Cancel</button><button class="pr" onclick="sv('${m}','${id||''}')">Save</button></div>`;
+ $('#dlg').innerHTML=`<h3 style="margin:0">${id?'Edit':'Add'} · ${c.t}</h3><div class="g">${c.f.map(([k,l,t,dl])=>fieldHTML(k,l,t,dl,r)).join('')}</div>${r.by?`<p style="font-size:12px;color:var(--mu);margin:0 0 10px">Last saved by ${esc(r.by)} · ${esc(r.at)}</p>`:''}<div class="r">${id?'<button class="dg sp" id="dx">Delete</button>':''}<button onclick="$(\'#dlg\').close()">Cancel</button><button class="pr" onclick="sv('${m}','${id||''}')">Save</button></div>`;
  if($('#dx'))$('#dx').onclick=async e=>{if(!e.target.dataset.c){e.target.dataset.c=1;e.target.textContent='Click again to delete';return}
   await mut(()=>{D[m]=D[m].filter(x=>x.id!==id)});$('#dlg').close();draw()};
  $('#dlg').showModal()}
+async function uploadImage(file){const path='stock/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+(file.name.split('.').pop()||'jpg');
+ const{error}=await sb.storage.from('images').upload(path,file,{upsert:false});if(error)throw error;
+ const{data}=sb.storage.from('images').getPublicUrl(path);return data.publicUrl}
 async function sv(m,id){const c=M[m],v={};
- c.f.forEach(([k,,t])=>{const x=$('#f_'+k).value.trim();v[k]=t==='number'?(x===''?'':+x):x});
+ for(const [k,,t] of c.f){if(t==='image')continue;const x=$('#f_'+k).value.trim();v[k]=t==='number'?(x===''?'':+x):x}
  if(!(v.name||v.cust))return toast('Please fill in the name');
+ const imgF=c.f.find(f=>f[2]==='image');
+ if(imgF){const fld=imgF[0],cur=id?((D[m].find(x=>x.id===id)||{})[fld]||''):'',wrap=$('#imgwrap'),fi=$('#f_'+fld);
+  if(wrap&&wrap.dataset.rm==='1')v[fld]='';
+  else if(fi&&fi.files&&fi.files[0]){try{toast('Uploading photo…');v[fld]=await uploadImage(fi.files[0])}catch(e){toast('Photo upload failed — saved without it');v[fld]=cur}}
+  else v[fld]=cur}
  v.by=me.name;v.at=today();
  await mut(()=>{const r=id&&D[m].find(x=>x.id===id);if(r)Object.assign(r,v);else D[m].push({id:id||uid(),...v})});
  $('#dlg').close();draw()}
@@ -203,7 +227,7 @@ function sett(){return`<div class="set"><h2>Settings</h2>
 function dl(name,data){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data]));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1e3)}
 function csv(m){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
  if(m==='asg'){const rows=[['Date','Customer Name','Stock Name','Stitch Type','Size','Qty','Notes','Amount (Rs.)']];D.asg.forEach(r=>(r.items||[]).forEach(it=>rows.push([r.date,r.cust,it.name,it.stitch,it.size,it.qty,it.notes,(+it.qty||0)*pr(it.name)])));return dl('asg.csv',rows.map(r=>r.map(q).join(',')).join('\n'))}
- const c=M[m];dl(m+'.csv',[c.f.map(f=>f[1]),...D[m].map(r=>c.f.map(f=>r[f[0]]))].map(r=>r.map(q).join(',')).join('\n'))}
+ const c=M[m],fs=c.f.filter(f=>f[2]!=='image');dl(m+'.csv',[fs.map(f=>f[1]),...D[m].map(r=>fs.map(f=>r[f[0]]))].map(r=>r.map(q).join(',')).join('\n'))}
 const backup=()=>dl('rifahs-backup-'+today()+'.json',JSON.stringify(D,null,1));
 function restore(i){const f=i.files[0];if(!f)return;const rd=new FileReader();rd.onload=async()=>{try{const o=JSON.parse(rd.result);if(!['stock','reg','asg','del'].every(k=>Array.isArray(o[k])))throw 0;D=o;await persist();toast('Backup restored');draw()}catch(e){toast('That file is not a valid backup')}};rd.readAsText(f)}
 async function chpw(){const p=$('#np').value;if(p.length<6)return toast('Use at least 6 characters');const{error}=await sb.auth.updateUser({password:p});toast(error?error.message:'Password updated');$('#np').value=''}
