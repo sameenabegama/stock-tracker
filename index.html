@@ -94,11 +94,13 @@ DS=['Pending','Packed','Dispatched','Out for Delivery','Delivered','Returned'],
 G='in gate',H='Rifah Mam from house',dt=n=>n?new Date(Date.UTC(1899,11,30)+n*864e5).toISOString().slice(0,10):'';
 let D,me,sb,cur='dash',Q={},navOpen=false,dashTab='overview';
 const pr=n=>(D.stock.find(s=>s.name===n)||{}).price||0;
+const daysSince=d=>d?Math.floor((new Date(today())-new Date(d))/864e5):0,
+isOver=r=>!['Delivered','Returned'].includes(r.status)&&!!r.disp&&daysSince(r.disp)>=25;
 const M={
 stock:{t:'Stock List',f:[['name','Stock Name','text'],['coll','Collection','text'],['price','Price (Rs.)','number'],['ref','Ref / Description','text'],['image','Photo (optional)','image']]},
 reg:{t:'Stock Register',f:[['date','Date','date'],['name','Stock Name','text','stocks'],['stitch','Stitch Type','text','stitch'],['size','Size','text','sizes'],['from','Received From','text'],['to','Delivered To','text'],['dd','Date Delivered','date'],['in','Qty In','number'],['out','Qty Out','number'],['status','Status','select',['','Packed']]],x:['Holding',r=>(+r.in||0)-(+r.out||0)]},
 asg:{t:'Delivery Assignment',f:[['date','Date','date'],['cust','Customer Name','text'],['name','Stock Name','text','stocks'],['stitch','Stitch Type','text','stitch'],['size','Size','text','sizes'],['qty','Qty','number'],['notes','Notes','text']],x:['Amount (Rs.)',r=>(+r.qty||0)*pr(r.name)]},
-del:{t:'Delivery Details',f:[['date','Date','date'],['cust','Customer Name','text'],['phone','Phone Number','tel'],['addr','Delivery Address','textarea'],['track','Courier / Tracking No.','text'],['disp','Dispatch Date','date'],['exp','Expected Delivery','date'],['status','Status','select'],['on','Delivered On','date']]}};
+del:{t:'Delivery Details',f:[['date','Date','date'],['cust','Customer Name','text'],['addr','Delivery Address','textarea'],['track','Courier / Tracking No.','text'],['disp','Dispatch Date','date'],['status','Status','select'],['on','Delivered On','date']],x:['Overdue',r=>isOver(r)?`<span style="color:var(--er)">Overdue · ${daysSince(r.disp)} days</span>`:'']}};
 const N=[['dash','Dashboard'],['stock','Stock List'],['reg','Stock Register'],['asg','Assignments'],['del','Deliveries'],['set','Settings']];
 
 function seed(){
@@ -137,7 +139,7 @@ function draw(){
  $('#app').innerHTML=`<header><b>🧵 Rifah's Kaleidoscope</b><button class="hb" onclick="navOpen=!navOpen;draw()" aria-label="Menu">☰</button><nav id="mnav" class="${navOpen?'open':''}">${N.filter(([k])=>k!=='staff'||me.role==='admin').map(([k,l])=>`<a class="${k===cur?'on':''}" onclick="navOpen=false;go('${k}')">${l}</a>`).join('')}</nav><small style="color:var(--mu)">${esc(me.name)} · ${me.role}</small><button class="gh" onclick="theme()" title="Light / dark">◐</button><button class="gh" onclick="logout()">Log out</button></header><main>${cur==='dash'?dash():cur==='set'?sett():list(cur)}</main><datalist id="stocks">${opts(stocks)}</datalist><datalist id="stitch">${opts(ST)}</datalist><datalist id="sizes">${opts(sizes)}</datalist>`}
 function dash(){
  const sm=(a,k)=>a.reduce((t,r)=>t+(+r[k]||0),0),tin=sm(D.reg,'in'),tout=sm(D.reg,'out'),
- open=D.del.filter(r=>!['Delivered','Returned'].includes(r.status)),od=open.filter(r=>r.exp&&r.exp<today()),by={};
+ open=D.del.filter(r=>!['Delivered','Returned'].includes(r.status)),od=open.filter(isOver),by={};
  D.reg.forEach(r=>by[r.name]=(by[r.name]||0)+(+r.in||0)-(+r.out||0));
  const top=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,8),mx=Math.max(1,...top.map(t=>t[1])),
  cnt=DS.map(s=>[s,D.del.filter(r=>r.status===s).length]),cm=Math.max(1,...cnt.map(c=>c[1])),
@@ -156,17 +158,15 @@ function dash(){
  const tabs=[['overview','Overview'],['stock','Stock & Holding'],['del','Deliveries']],
  nav=`<div class="dnav">${tabs.map(([k,l])=>`<a class="${dashTab===k?'on':''}" onclick="dashTab='${k}';draw()">${l}</a>`).join('')}</div>`;
 
- if(dashTab==='stock')return nav+`<div class="k">${[['Designs in catalogue',D.stock.length],['Holding · Stitched',holdS],['Holding · Unstitched',holdU],['Holding · Stitching Unit',stitchUnit],['Packed',packedQ],['Unpacked',unpackedQ],['Units received',tin],['Units sent out',tout]].map(([l,v])=>card(l,v)).join('')}</div>
+ if(dashTab==='stock')return nav+`<div class="k">${[['Holding · Stitched',holdS],['Holding · Unstitched',holdU],['Holding · Stitching Unit',stitchUnit],['Packed',packedQ],['Unpacked',unpackedQ],['Units received',tin],['Units sent out',tout]].map(([l,v])=>card(l,v)).join('')}</div>
 <div class="card"><h3>Holding by design</h3>${top.length?top.map(t=>bar(t[0],t[1],mx)).join(''):'<div class="em">No register entries yet</div>'}</div>
 <div class="card"><h3>Latest register entries</h3>${rec.map(r=>`<div>${esc(r.date)} · ${esc(r.name)} · ${esc(r.size)} · ${esc(r.stitch)}${r.status==='Packed'?' · <span style="color:var(--ok)">Packed</span>':''}</div>`).join('')||'<div class="em">Empty</div>'}</div>`;
 
  if(dashTab==='del')return nav+`<div class="k">${[['Open deliveries',open.length],['Overdue deliveries',od.length],['Assigned value','Rs. '+val.toLocaleString('en-IN')]].map(([l,v])=>card(l,v)).join('')}</div>
 <div class="two"><div class="card"><h3>Deliveries by status</h3>${cnt.map(c=>bar(c[0],c[1],cm)).join('')}</div>
-<div class="card"><h3>⚠ Overdue deliveries</h3>${od.length?od.map(r=>`<div>${esc(r.cust)} — due ${esc(r.exp)} <span class="b s0">${esc(r.status)}</span></div>`).join(''):'<div class="em">Nothing overdue 🎉</div>'}</div></div>`;
+<div class="card"><h3>⚠ Overdue deliveries</h3>${od.length?od.map(r=>`<div>${esc(r.cust)} — dispatched ${esc(r.disp)} (${daysSince(r.disp)} days ago) <span class="b s0">${esc(r.status)}</span></div>`).join(''):'<div class="em">Nothing overdue 🎉</div>'}</div></div>`;
 
- return nav+`<div class="k">${[['Designs in catalogue',D.stock.length],['Open deliveries',open.length],['Overdue deliveries',od.length],['Assigned value','Rs. '+val.toLocaleString('en-IN')]].map(([l,v])=>card(l,v)).join('')}</div>
-<div class="two"><div class="card"><h3>Holding by design</h3>${top.length?top.map(t=>bar(t[0],t[1],mx)).join(''):'<div class="em">No register entries yet</div>'}</div>
-<div class="card"><h3>Deliveries by status</h3>${cnt.map(c=>bar(c[0],c[1],cm)).join('')}</div></div>`}
+ return nav+`<div class="k">${[['Designs in catalogue',D.stock.length],['Open deliveries',open.length],['Overdue deliveries',od.length],['Assigned value','Rs. '+val.toLocaleString('en-IN')]].map(([l,v])=>card(l,v)).join('')}</div>`}
 function list(m){const c=M[m];
  return`<div class="tb"><h2>${c.t}</h2><input id="q" placeholder="Search…" value="${esc(Q[m]||'')}" oninput="Q['${m}']=this.value;$('#tb').innerHTML=tbl('${m}')"><button class="pr" onclick="${m==='asg'?'asgEdit()':`edit('${m}')`}">+ Add</button><button onclick="csv('${m}')">Export CSV</button></div><div class="w" id="tb">${tbl(m)}</div>`}
 function tbl(m){if(m==='asg')return asgTbl();const c=M[m],q=(Q[m]||'').toLowerCase(),hasD=c.f[0][2]==='date',
