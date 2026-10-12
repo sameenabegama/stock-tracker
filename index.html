@@ -326,7 +326,7 @@ dialog form{display:flex;flex-direction:column;min-height:0;flex:1}
 }
 
 /* ---------- tablets & phones: tables become neat cards ---------- */
-@media(max-width:900px){
+@media(max-width:1100px){
 .rt thead{display:none}
 .rt,.rt tbody{display:block}
 .rt tr{display:flex;flex-direction:column;gap:3px;padding:16px;border-bottom:1px solid var(--ln)}
@@ -408,14 +408,31 @@ dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:24px 24px 0 0;max
 }
 
 
+
+/* holding by design: compact tiles */
+.htools{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.hsearch{max-width:260px;min-width:180px;flex:0 1 260px}
+.dgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media(max-width:1100px){.dgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.dt{display:flex;flex-direction:column;justify-content:space-between;gap:8px;padding:12px 14px;border:1px solid var(--ln);border-radius:16px;background:var(--sf);text-align:left;transition:border-color .15s,background .15s;min-width:0}
+.dt:hover{border-color:var(--br);background:var(--br50)}
+.dt .dr{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.dt .dn{font-weight:700;font-size:13.5px;line-height:1.3;color:var(--ink2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-width:0;overflow-wrap:anywhere}
+.dt b{font:700 24px/1 var(--serif);font-variant-numeric:lining-nums tabular-nums;color:var(--ink)}
+.dt i{display:block;height:5px;border-radius:99px;background:var(--br100);overflow:hidden}
+.dt u{display:block;height:100%;border-radius:99px;background:var(--br);text-decoration:none}
+.dt.top{background:var(--br50);border-color:var(--br100)}
+.dt.top b{color:var(--br)}
+.hmore{display:flex;justify-content:center;margin-top:14px}
+@media(max-width:720px){.dgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dt{padding:10px 12px}.dt b{font-size:21px}.hsearch{max-width:none;flex:1 1 100%}}
 /* ---------- extra polish for every screen size ---------- */
 @media(max-width:1200px){.sheets{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(min-width:721px) and (max-width:900px){
+@media(min-width:721px) and (max-width:1100px){
 .rt tbody{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px}
 .rt tr{border:1px solid var(--ln)!important;border-radius:18px}
 .tcard .w{background:var(--sf2)}
 }
-@media(max-width:900px){
+@media(max-width:1100px){
 .rt td.wrap,.rt td.note{flex-direction:column;align-items:flex-start;gap:2px;text-align:left}
 .rt td.note .nt{text-align:left}
 .rt td.wrap .bwrap{justify-content:flex-start}
@@ -693,7 +710,7 @@ const kpi=(icon,l,v,h,o={})=>`<${o.go?`button data-act="go" data-s="${site}" dat
 const lrow=(l,v,h,act)=>`<${act?`button ${act}`:'div'} class="lr"><div><b>${l}</b>${h?`<small>${h}</small>`:''}</div><span class="lv">${v}</span></${act?'button':'div'}>`;
 
 /* ---------- dashboard: Stock Studio ---------- */
-let dashTab='hold';
+let dashTab='hold',holdAll=false;
 function dash1(){const D=DB[1],
  open=D.del.filter(r=>!['Delivered','Returned'].includes(r.status)),od=open.filter(isOver),by={};
  D.reg.forEach(r=>{const k=r.name||'Unnamed';by[k]=(by[k]||0)+(+r.in||0)-(+r.out||0)});
@@ -712,7 +729,11 @@ function dash1(){const D=DB[1],
  if(dashTab==='where')body=`<div class="places">${kpi('dress','Stitched',holdS,'Ready-stitched pieces in hand')}${kpi('tag','Unstitched',holdU,'Fabric sets not stitched yet')}${kpi('scissors','At the stitching unit',unit,'Sent there, not back yet')}${kpi('box','Packed',packed,'Ready to send')}${kpi('inbox','Not packed yet',unpacked,'Still to pack')}</div>`;
  else if(dashTab==='del')body=`<div class="g2"><section class="card pad"><div class="ch"><h2>Parcels by status</h2></div><p class="cs">Every parcel in Deliveries.</p>${D.del.length?DS.map(s=>lrow(badge(s),D.del.filter(r=>r.status===s).length,'',`data-act="sheet" data-m="del" data-f="all"`)).join(''):emptyBox('No parcels yet','Add a parcel when you dispatch it.','del')}</section>
 <section class="card pad"><div class="ch"><h2>Overdue parcels</h2></div><p class="cs">Dispatched 25 or more days ago, not delivered.</p>${od.length?od.map(r=>lrow(esc(r.cust),`<span class="b er">${daysSince(r.disp)} days</span>`,'Dispatched '+fd(r.disp),`data-act="edit" data-m="del" data-id="${r.id}"`)).join(''):`<div class="lr"><div><b>Nothing is overdue</b><small>Every parcel is within 25 days of dispatch.</small></div><span class="b ok">On time</span></div>`}</section></div>`;
- else body=`<section class="card pad"><div class="hbar-head"><h2 style="font-size:25px">Holding by design</h2><span class="mu">${top.length} ${top.length===1?'design':'designs'}, ${hold} pieces</span></div><p class="cs">How many pieces of each design you have in hand.</p>${top.length?`<div class="bars">${top.map(([l,v])=>`<div class="bar"><span title="${esc(l)}">${esc(l)}</span><i><u style="width:${v/mx*100}%"></u></i><b>${v}</b></div>`).join('')}</div>`:emptyBox('Nothing in holding','Add stock entries to see them here.','reg')}</section>`;
+ else{const LIM=12,shownTop=holdAll?top:top.slice(0,LIM);
+  body=`<section class="card pad"><div class="htools"><div><h2 style="font-size:25px">Holding by design</h2><p class="cs" style="margin:3px 0 0">${top.length} ${top.length===1?'design':'designs'}, ${hold} pieces in hand. Tap a design to see its entries.</p></div>${top.length>LIM?`<label class="search hsearch">${ic('search',16)}<input id="hq" type="search" placeholder="Find a design" autocomplete="off" aria-label="Find a design"></label>`:''}</div>
+${top.length?`<div class="dgrid" id="dgrid">${top.map(([l,v],i)=>`<button class="dt${i<3?' top':''}" data-act="holdgo" data-n="${esc(l)}" data-s="${esc(l.toLowerCase())}"${!holdAll&&i>=LIM?' hidden data-more="1"':''}><span class="dr"><span class="dn">${esc(l)}</span><b>${v}</b></span><i><u style="width:${Math.max(4,v/mx*100)}%"></u></i></button>`).join('')}</div>
+<p class="cs" id="hnone" hidden style="margin-top:12px">No design matches that name.</p>
+${top.length>LIM?`<div class="hmore"><button class="btn sm" data-act="holdall" id="hmorebtn">${holdAll?'Show top 12 only':`Show all ${top.length} designs`}</button></div>`:''}`:emptyBox('Nothing in holding','Add stock entries to see them here.','reg')}</section>`}
  return head()+hero+kp+seg+body+`<div class="sec" style="margin-top:22px"><h2>Quick add</h2><div class="row"><button class="btn" data-act="add" data-m="stock">${ic('dress',16)}<span>Design</span></button><button class="btn" data-act="add" data-m="reg">${ic('list',16)}<span>Stock entry</span></button><button class="btn" data-act="add" data-m="asg">${ic('users',16)}<span>Assignment</span></button><button class="btn" data-act="add" data-m="del">${ic('truck',16)}<span>Delivery</span></button></div></div>`}
 
 /* ---------- dashboard: Order Care ---------- */
@@ -908,6 +929,8 @@ add:b=>openEdit(b.dataset.m),edit:b=>openEdit(b.dataset.m,b.dataset.id),del:b=>d
 photo:b=>showImg(b.dataset.id),close:()=>$('#dlg').close(),
 chip:b=>{F[b.dataset.m]=b.dataset.f;refresh(b.dataset.m)},
 tab:b=>{dashTab=b.dataset.t;draw()},
+holdall:()=>{holdAll=!holdAll;draw()},
+holdgo:b=>{Q.reg=b.dataset.n;go(1,'reg')},
 csv:b=>csv(b.dataset.m),theme:()=>theme(),logout:()=>logout(),
 menu:()=>toggleNav(true),scrim:()=>toggleNav(false),
 rmimg:()=>{$('#imgwrap').dataset.rm='1';const p=$('#imgprev');if(p)p.remove()},
@@ -919,6 +942,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
 document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.pn[data-act]')){e.preventDefault();ACT.photo(e.target)}if(e.key==='Escape')toggleNav(false)});
 document.addEventListener('input',e=>{const t=e.target;
  if(t.dataset.q){Q[t.dataset.q]=t.value;refresh(t.dataset.q);return}
+ if(t.id==='hq'){const q=t.value.trim().toLowerCase();let n=0;document.querySelectorAll('#dgrid .dt').forEach(d=>{const show=q?d.dataset.s.includes(q):(holdAll||!d.dataset.more);d.hidden=!show;if(show)n++});const nb=$('#hnone');if(nb)nb.hidden=n>0;const mb=$('#hmorebtn');if(mb)mb.parentNode.hidden=!!q;return}
  if(t.dataset.i!=null&&draftItems[+t.dataset.i]){draftItems[+t.dataset.i][t.dataset.k]=t.dataset.k==='qty'?(+t.value||0):t.value;if(t.dataset.k==='name'||t.dataset.k==='qty')updTotal()}
  if(t.getAttribute('aria-invalid')==='true')t.setAttribute('aria-invalid','false')});
 document.addEventListener('submit',e=>{if(e.target.id==='pwf'){e.preventDefault();chpw()}});
