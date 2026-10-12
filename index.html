@@ -636,7 +636,7 @@ function theme(){const r=document.documentElement;r.dataset.theme=isDark()?'ligh
 const themeBtn=cls=>`<button class="${cls}" data-act="theme" title="Switch light or dark">${ic(isDark()?'sun':'moon',17)}<span>${isDark()?'Light':'Dark'}</span></button>`;
 
 /* ---------- sign in ---------- */
-const mk=u=>({id:u.id,name:(u.user_metadata&&u.user_metadata.name)||u.email||'Friend',role:u.app_metadata&&u.app_metadata.role==='admin'?'admin':'staff'});
+const mk=u=>({id:u.id,name:(u.user_metadata&&u.user_metadata.name)||u.email||'Friend',role:(r=>['admin','owner'].includes(r)?r:'staff')(String((u.app_metadata&&u.app_metadata.role)||'').toLowerCase())});
 const firstName=()=>{const n=(me&&me.name||'').split(/[ @.]/)[0]||'there';return n.charAt(0).toUpperCase()+n.slice(1)};
 function loginView(){site=null;document.body.className='';$('#app').innerHTML=`<div class="auth"><div class="aside buti"><div class="brand">${mark()}<div><b>Rifah's Kaleidoscope</b></div></div>
 <div><h1>Stock Studio and Order Care</h1><p>Your designs, stock, parcels and customer orders in one place.</p></div>${rail(1)}<div></div></div>
@@ -655,7 +655,7 @@ async function doAuth(){const b=$('#go'),e=$('#er'),em=$('#u').value.trim(),pw=$
   if(error){busy(b,false);e.textContent=/invalid|credentials/i.test(error.message)?'Wrong email or password. Check both and try again.':error.message;return}
   await start(data.user)}
  catch(x){busy(b,false);e.textContent='Could not reach the sign-in service. Check your internet and try again.'}}
-async function start(u){me=mk(u);$('#app').innerHTML='<div class="load"><div><div class="spin"></div>Loading your data…</div></div>';
+async function start(u){try{const r=await sb.auth.getUser();if(r.data&&r.data.user)u=r.data.user}catch(e){}me=mk(u);$('#app').innerHTML='<div class="load"><div><div class="spin"></div>Loading your data…</div></div>';
  try{const[a,b]=await Promise.all([load(KEY[1]),load(KEY[2])]);
   if(!a){DB[1]=seed1();try{await store(KEY[1],DB[1])}catch(e){}}else{const f={v:0};DB[1]=norm1(a,f);if(f.v){try{await store(KEY[1],DB[1])}catch(e){}}}
   if(!b){DB[2]=seed2();try{await store(KEY[2],DB[2])}catch(e){}}else{const f2={v:0};DB[2]=norm2(b,f2);if(f2.v){try{await store(KEY[2],DB[2])}catch(e){}}}}
@@ -896,7 +896,7 @@ async function intlSave(id){const name=$('#f_name').value.trim(),country=$('#f_c
 
 /* ---------- settings, export, backup ---------- */
 function sett(){return `<div class="ph"><div><h1>Settings</h1><p>Your account and your data. These settings cover Stock Studio and Order Care.</p></div></div><div class="set">
-<section class="card pad"><h3>Account</h3><p class="cs">Signed in as <b>${esc(me.name)}</b> (${me.role}).</p></section>
+<section class="card pad"><h3>Account</h3><p class="cs">Signed in as <b>${esc(me.name)}</b> (${me.role}).${me.role==='admin'?'':' Backup and restore are available to the admin only.'}</p></section>
 <section class="card pad"><h3>Change my password</h3><p class="cs">Use at least 6 characters.</p><form id="pwf" novalidate><div class="fld"><label for="np">New password</label><div class="pwrap"><input id="np" type="password" autocomplete="new-password"><button type="button" data-act="peek" aria-label="Show password">${ic('eye',18)}</button></div><span class="ferr" id="e_np"></span></div><div style="margin-top:14px"><button class="btn btn-pri" id="pwb" type="submit">Update password</button></div></form></section>
 <section class="card pad"><h3>How it works</h3><p class="cs" style="margin-bottom:0">Stock Studio holds your designs, stock register, assignments and deliveries. Order Care holds the five lists from your Excel file: courier issues, stitching delays, exchanges, international and express orders. Every list has a Notes field. Use the switch at the top of the menu to jump between them.</p></section>
 ${me.role==='admin'?`<section class="card pad"><h3>Backup and restore</h3><p class="cs">Your data is saved online. Download a copy now and then to be safe. One backup file holds both websites.</p><div class="row"><button class="btn" data-act="backup">${ic('download',16)}<span>Download backup</span></button><button class="btn" data-act="restore">${ic('upload',16)}<span>Restore from backup</span></button><input id="rf" type="file" accept=".json,application/json" hidden></div></section>`:''}</div>`}
@@ -907,8 +907,8 @@ function csv(m){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',c=M[m];let r
  else{const fs=c.f.filter(f=>f.t!=='image');rows=[fs.map(f=>f.l),...DB[c.site][m].map(r=>fs.map(f=>r[f.k]))]}
  if(rows.length<2){toast('Nothing to export yet.','er');return}
  dlFile(c.t.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+today()+'.csv','\ufeff'+rows.map(r=>r.map(q).join(',')).join('\r\n'),'text/csv');toast('CSV downloaded')}
-function backup(){dlFile('rifahs-backup-'+today()+'.json',JSON.stringify({version:2,data:DB[1],care:DB[2]},null,1),'application/json');toast('Backup downloaded')}
-function restore(i){const f=i.files[0];if(!f)return;const rd=new FileReader();
+function backup(){if(me.role!=='admin'){toast('Only the admin can download a backup.','er');return}dlFile('rifahs-backup-'+today()+'.json',JSON.stringify({version:2,data:DB[1],care:DB[2]},null,1),'application/json');toast('Backup downloaded')}
+function restore(i){if(me.role!=='admin'){toast('Only the admin can restore a backup.','er');i.value='';return}const f=i.files[0];if(!f)return;const rd=new FileReader();
  rd.onload=async()=>{let a,b;try{const o=JSON.parse(rd.result);
    if(o&&o.data&&o.care){a=o.data;b=o.care}else if(o&&['stock','reg','asg','del'].every(k=>Array.isArray(o[k])))a=o;else throw 0;
    if(!['stock','reg','asg','del'].every(k=>Array.isArray(a[k])))throw 0}
@@ -958,7 +958,7 @@ window.addEventListener('online',netChange);window.addEventListener('offline',ne
  if(!window.supabase||!SB.url||SB.url.startsWith('PASTE')){$('#app').innerHTML=`<div class="load"><div class="msg"><div class="eico">${ic('wifi',26)}</div><h2>Could not load the app</h2><p>The sign-in service did not load. Check your internet connection and reload the page. If this keeps happening, check the Supabase URL and key at the top of index.html.</p><button class="btn btn-pri" onclick="location.reload()">Reload</button></div></div>`;return}
  try{sb=supabase.createClient(SB.url,SB.key);
   const{data:{session}}=await sb.auth.getSession();
-  if(session)await start(session.user);else loginView();
+  if(session){let u=session.user;try{const r=await sb.auth.getUser();if(r.data&&r.data.user)u=r.data.user}catch(e){}await start(u)}else loginView();
   sb.auth.onAuthStateChange((ev)=>{if(ev==='SIGNED_OUT'&&me){me=null;DB={1:null,2:null};loginView();toast('You have been signed out.')}});
   document.addEventListener('visibilitychange',async()=>{if(document.hidden||!me||$('#dlg').open||!navigator.onLine)return;
    try{const[a,b]=await Promise.all([load(KEY[1]),load(KEY[2])]);const na=a?norm1(a):DB[1],nb=b?norm2(b):DB[2];
