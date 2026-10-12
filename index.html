@@ -437,6 +437,10 @@ dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:24px 24px 0 0;max
 .seg button.on .tcnt{background:rgba(255,255,255,.25);color:inherit}
 @media(max-width:720px){.seg{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:480px){.dt .dr{flex-direction:column;gap:4px}.dt .dn{-webkit-line-clamp:3}.seg{grid-template-columns:repeat(2,1fr)}.seg button{min-height:50px;flex-direction:row;gap:6px}}
+
+/* dresses swaying in a gentle breeze */
+.rail .sw{transform-box:view-box;animation:sway 3.4s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
 /* ---------- extra polish for every screen size ---------- */
 @media(max-width:1200px){.sheets{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(min-width:721px) and (max-width:1100px){
@@ -553,7 +557,7 @@ function dress(x,t,c,c2){
  if(t==='k')s+=`<path d="M${x-17} 46l-11 6 2 40 9-1z M${x+17} 46l11 6-2 40-9-1z" fill="${c}"/><path d="M${x-17} 46h34l3 104h-40z" fill="${c}"/><path d="M${x-6} 46l6 12 6-12z" fill="${c2}"/><path d="M${x-17} 50l9-4 30 78-8 6z" fill="${c2}" fill-opacity=".85"/><path d="M${x-12} 62l6-2M${x-6} 78l6-2M${x} 94l6-2M${x+6} 110l6-2" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/><path d="M${x-20} 142h40" stroke="${c2}" stroke-width="4"/>`;
  return s}
 function rail(v){const P={1:[['a','#f6a5c0'],['f','#f5c46e'],['k','#c9b0f3']],2:[['k','#c9b0f3'],['a','#f6a5c0'],['f','#f5c46e']]}[v===2?2:1];
- return `<svg class="rail" viewBox="0 0 260 168" aria-hidden="true"><path d="M14 18h232" stroke="#f4c069" stroke-width="4" stroke-linecap="round"/><circle cx="14" cy="18" r="5" fill="#f4c069"/><circle cx="246" cy="18" r="5" fill="#f4c069"/>${P.map(([t,c],i)=>dress(60+i*70,t,c,'#fff7fa')).join('')}</svg>`}
+ return `<svg class="rail" viewBox="0 0 260 168" aria-hidden="true"><path d="M14 18h232" stroke="#f4c069" stroke-width="4" stroke-linecap="round"/><circle cx="14" cy="18" r="5" fill="#f4c069"/><circle cx="246" cy="18" r="5" fill="#f4c069"/>${P.map(([t,c],i)=>{const x=60+i*70;return `<g class="sw" style="transform-origin:${x}px 18px;animation-delay:${[-0.2,-1.4,-0.8][i]}s;animation-duration:${[3.4,3.9,3.1][i]}s">${dress(x,t,c,'#fff7fa')}</g>`}).join('')}</svg>`}
 
 /* ---------- the two websites ---------- */
 const SITES={
@@ -737,14 +741,14 @@ function dash1(){const D=DB[1],
  kp=`<div class="kpis k3">${kpi('dress','Pieces in holding',hold,`${holdS} stitched, ${holdU} unstitched`,{go:'reg'})}${kpi('truck','On the way',open.length,'Parcels not delivered yet',{go:'del'})}${kpi('clock','Overdue',od.length,'25+ days since dispatch',{late:od.length>0,go:'del'})}</div>`,
  lowAt=3,allNames=[...new Set([...Object.keys(by),...D.stock.map(s=>s.name).filter(Boolean)])],
  low=allNames.map(n=>[n,by[n]||0]).filter(([,v])=>v>0&&v<=lowAt).sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0])),
- out=allNames.map(n=>[n,by[n]||0]).filter(([,v])=>v<=0).sort((a,b)=>a[0].localeCompare(b[0])),
+ out=Object.entries(by).filter(([,v])=>v<=0).sort((a,b)=>a[0].localeCompare(b[0])),
  tabs=[['where','Where your pieces are','box'],['hold','Holding by design','dress'],['low','Low stock','alert',low.length+out.length],['del','Deliveries','truck']],
  seg=`<div class="seg" role="tablist" aria-label="Dashboard views">${tabs.map(([k,l,i,n])=>`<button role="tab" aria-selected="${dashTab===k}" class="${dashTab===k?'on':''}" data-act="tab" data-t="${k}">${ic(i,18)}<span>${l}</span>${n?`<span class="tcnt">${n}</span>`:''}</button>`).join('')}</div>`;
  let body;
  if(dashTab==='low'){const tile=([l,v])=>`<button class="dt ${v<=0?'out':'low'}" data-act="holdgo" data-n="${esc(l)}"><span class="dr"><span class="dn">${esc(l)}</span><b>${v<=0?0:v}</b></span><small>${v<=0?'Out of stock':v===1?'1 piece left':v+' pieces left'}</small></button>`;
   body=`<section class="card pad"><div class="htools"><div><h2 style="font-size:25px">Running low</h2><p class="cs" style="margin:3px 0 0">Designs with ${lowAt} or fewer pieces in hand, lowest first. Tap a design to see its entries.</p></div><span class="b wn">${low.length} ${low.length===1?'design':'designs'}</span></div>
 ${low.length?`<div class="dgrid">${low.map(tile).join('')}</div>`:`<div class="lr"><div><b>Nothing is running low</b><small>Every design has more than ${lowAt} pieces.</small></div><span class="b ok">All good</span></div>`}</section>
-${out.length?`<section class="card pad" style="margin-top:16px"><div class="htools"><div><h2 style="font-size:25px">Out of stock</h2><p class="cs" style="margin:3px 0 0">Designs in your catalogue or register with no pieces in hand.</p></div><span class="b er">${out.length} ${out.length===1?'design':'designs'}</span></div><div class="dgrid">${out.map(tile).join('')}</div></section>`:''}`}
+${out.length?`<section class="card pad" style="margin-top:16px"><div class="htools"><div><h2 style="font-size:25px">Out of stock</h2><p class="cs" style="margin:3px 0 0">Designs from your stock register with no pieces left in hand.</p></div><span class="b er">${out.length} ${out.length===1?'design':'designs'}</span></div><div class="dgrid">${out.map(tile).join('')}</div></section>`:''}`}
  else if(dashTab==='where')body=`<div class="places">${kpi('dress','Stitched',holdS,'Ready-stitched pieces in hand')}${kpi('tag','Unstitched',holdU,'Fabric sets not stitched yet')}${kpi('scissors','At the stitching unit',unit,'Sent there, not back yet')}${kpi('box','Packed',packed,'Ready to send')}${kpi('inbox','Not packed yet',unpacked,'Still to pack')}</div>`;
  else if(dashTab==='del')body=`<div class="g2"><section class="card pad"><div class="ch"><h2>Parcels by status</h2></div><p class="cs">Every parcel in Deliveries.</p>${D.del.length?DS.map(s=>lrow(badge(s),D.del.filter(r=>r.status===s).length,'',`data-act="sheet" data-m="del" data-f="all"`)).join(''):emptyBox('No parcels yet','Add a parcel when you dispatch it.','del')}</section>
 <section class="card pad"><div class="ch"><h2>Overdue parcels</h2></div><p class="cs">Dispatched 25 or more days ago, not delivered.</p>${od.length?od.map(r=>lrow(esc(r.cust),`<span class="b er">${daysSince(r.disp)} days</span>`,'Dispatched '+fd(r.disp),`data-act="edit" data-m="del" data-id="${r.id}"`)).join(''):`<div class="lr"><div><b>Nothing is overdue</b><small>Every parcel is within 25 days of dispatch.</small></div><span class="b ok">On time</span></div>`}</section></div>`;
