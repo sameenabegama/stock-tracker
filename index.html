@@ -417,7 +417,8 @@ dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:24px 24px 0 0;max
 .dt{display:flex;flex-direction:column;justify-content:space-between;gap:8px;padding:12px 14px;border:1px solid var(--ln);border-radius:16px;background:var(--sf);text-align:left;transition:border-color .15s,background .15s;min-width:0}
 .dt:hover{border-color:var(--br);background:var(--br50)}
 .dt .dr{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-.dt .dn{font-weight:700;font-size:13.5px;line-height:1.3;color:var(--ink2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-width:0;overflow-wrap:anywhere}
+.dt .dn{font-weight:700;font-size:13.5px;line-height:1.3;color:var(--ink2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-width:0;overflow-wrap:break-word}
+.dt.low .dn,.dt.out .dn{-webkit-line-clamp:3}
 .dt b{font:700 24px/1 var(--serif);font-variant-numeric:lining-nums tabular-nums;color:var(--ink)}
 .dt i{display:block;height:5px;border-radius:99px;background:var(--br100);overflow:hidden}
 .dt u{display:block;height:100%;border-radius:99px;background:var(--br);text-decoration:none}
@@ -425,6 +426,17 @@ dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:24px 24px 0 0;max
 .dt.top b{color:var(--br)}
 .hmore{display:flex;justify-content:center;margin-top:14px}
 @media(max-width:720px){.dgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dt{padding:10px 12px}.dt b{font-size:21px}.hsearch{max-width:none;flex:1 1 100%}}
+
+/* low stock tiles */
+.dt small{font-size:12px;font-weight:700;color:var(--ink3)}
+.dt.low{border-color:var(--wnb);background:linear-gradient(var(--sf),var(--sf)) padding-box}
+.dt.low b,.dt.low small{color:var(--wn)}
+.dt.out b,.dt.out small{color:var(--er)}
+.dt.out{border-color:var(--erb)}
+.tcnt{font-size:11.5px;font-weight:800;min-width:22px;padding:1px 7px;border-radius:99px;background:var(--wnb);color:var(--wn);text-align:center}
+.seg button.on .tcnt{background:rgba(255,255,255,.25);color:inherit}
+@media(max-width:720px){.seg{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:480px){.dt .dr{flex-direction:column;gap:4px}.dt .dn{-webkit-line-clamp:3}.seg{grid-template-columns:repeat(2,1fr)}.seg button{min-height:50px;flex-direction:row;gap:6px}}
 /* ---------- extra polish for every screen size ---------- */
 @media(max-width:1200px){.sheets{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(min-width:721px) and (max-width:1100px){
@@ -710,7 +722,7 @@ const kpi=(icon,l,v,h,o={})=>`<${o.go?`button data-act="go" data-s="${site}" dat
 const lrow=(l,v,h,act)=>`<${act?`button ${act}`:'div'} class="lr"><div><b>${l}</b>${h?`<small>${h}</small>`:''}</div><span class="lv">${v}</span></${act?'button':'div'}>`;
 
 /* ---------- dashboard: Stock Studio ---------- */
-let dashTab='hold',holdAll=false;
+let dashTab='where',holdAll=false;
 function dash1(){const D=DB[1],
  open=D.del.filter(r=>!['Delivered','Returned'].includes(r.status)),od=open.filter(isOver),by={};
  D.reg.forEach(r=>{const k=r.name||'Unnamed';by[k]=(by[k]||0)+(+r.in||0)-(+r.out||0)});
@@ -723,10 +735,17 @@ function dash1(){const D=DB[1],
  const hold=holdS+holdU,
  hero=`<section class="hero buti"><div><h2><span class="dot${od.length?' late':''}"></span>${od.length?`${od.length} ${od.length===1?'parcel is':'parcels are'} overdue`:'All parcels are on time'}</h2><p>${od.length?'Dispatched 25 or more days ago and not delivered yet. Check with the courier.':`You are holding ${hold} ${hold===1?'piece':'pieces'} of ${top.length} ${top.length===1?'design':'designs'}.`}</p></div>${rail(1)}</section>`,
  kp=`<div class="kpis k3">${kpi('dress','Pieces in holding',hold,`${holdS} stitched, ${holdU} unstitched`,{go:'reg'})}${kpi('truck','On the way',open.length,'Parcels not delivered yet',{go:'del'})}${kpi('clock','Overdue',od.length,'25+ days since dispatch',{late:od.length>0,go:'del'})}</div>`,
- tabs=[['hold','Holding by design','dress'],['where','Where your pieces are','box'],['del','Deliveries','truck']],
- seg=`<div class="seg" role="tablist" aria-label="Dashboard views">${tabs.map(([k,l,i])=>`<button role="tab" aria-selected="${dashTab===k}" class="${dashTab===k?'on':''}" data-act="tab" data-t="${k}">${ic(i,18)}<span>${l}</span></button>`).join('')}</div>`;
+ lowAt=3,allNames=[...new Set([...Object.keys(by),...D.stock.map(s=>s.name).filter(Boolean)])],
+ low=allNames.map(n=>[n,by[n]||0]).filter(([,v])=>v>0&&v<=lowAt).sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0])),
+ out=allNames.map(n=>[n,by[n]||0]).filter(([,v])=>v<=0).sort((a,b)=>a[0].localeCompare(b[0])),
+ tabs=[['where','Where your pieces are','box'],['hold','Holding by design','dress'],['low','Low stock','alert',low.length+out.length],['del','Deliveries','truck']],
+ seg=`<div class="seg" role="tablist" aria-label="Dashboard views">${tabs.map(([k,l,i,n])=>`<button role="tab" aria-selected="${dashTab===k}" class="${dashTab===k?'on':''}" data-act="tab" data-t="${k}">${ic(i,18)}<span>${l}</span>${n?`<span class="tcnt">${n}</span>`:''}</button>`).join('')}</div>`;
  let body;
- if(dashTab==='where')body=`<div class="places">${kpi('dress','Stitched',holdS,'Ready-stitched pieces in hand')}${kpi('tag','Unstitched',holdU,'Fabric sets not stitched yet')}${kpi('scissors','At the stitching unit',unit,'Sent there, not back yet')}${kpi('box','Packed',packed,'Ready to send')}${kpi('inbox','Not packed yet',unpacked,'Still to pack')}</div>`;
+ if(dashTab==='low'){const tile=([l,v])=>`<button class="dt ${v<=0?'out':'low'}" data-act="holdgo" data-n="${esc(l)}"><span class="dr"><span class="dn">${esc(l)}</span><b>${v<=0?0:v}</b></span><small>${v<=0?'Out of stock':v===1?'1 piece left':v+' pieces left'}</small></button>`;
+  body=`<section class="card pad"><div class="htools"><div><h2 style="font-size:25px">Running low</h2><p class="cs" style="margin:3px 0 0">Designs with ${lowAt} or fewer pieces in hand, lowest first. Tap a design to see its entries.</p></div><span class="b wn">${low.length} ${low.length===1?'design':'designs'}</span></div>
+${low.length?`<div class="dgrid">${low.map(tile).join('')}</div>`:`<div class="lr"><div><b>Nothing is running low</b><small>Every design has more than ${lowAt} pieces.</small></div><span class="b ok">All good</span></div>`}</section>
+${out.length?`<section class="card pad" style="margin-top:16px"><div class="htools"><div><h2 style="font-size:25px">Out of stock</h2><p class="cs" style="margin:3px 0 0">Designs in your catalogue or register with no pieces in hand.</p></div><span class="b er">${out.length} ${out.length===1?'design':'designs'}</span></div><div class="dgrid">${out.map(tile).join('')}</div></section>`:''}`}
+ else if(dashTab==='where')body=`<div class="places">${kpi('dress','Stitched',holdS,'Ready-stitched pieces in hand')}${kpi('tag','Unstitched',holdU,'Fabric sets not stitched yet')}${kpi('scissors','At the stitching unit',unit,'Sent there, not back yet')}${kpi('box','Packed',packed,'Ready to send')}${kpi('inbox','Not packed yet',unpacked,'Still to pack')}</div>`;
  else if(dashTab==='del')body=`<div class="g2"><section class="card pad"><div class="ch"><h2>Parcels by status</h2></div><p class="cs">Every parcel in Deliveries.</p>${D.del.length?DS.map(s=>lrow(badge(s),D.del.filter(r=>r.status===s).length,'',`data-act="sheet" data-m="del" data-f="all"`)).join(''):emptyBox('No parcels yet','Add a parcel when you dispatch it.','del')}</section>
 <section class="card pad"><div class="ch"><h2>Overdue parcels</h2></div><p class="cs">Dispatched 25 or more days ago, not delivered.</p>${od.length?od.map(r=>lrow(esc(r.cust),`<span class="b er">${daysSince(r.disp)} days</span>`,'Dispatched '+fd(r.disp),`data-act="edit" data-m="del" data-id="${r.id}"`)).join(''):`<div class="lr"><div><b>Nothing is overdue</b><small>Every parcel is within 25 days of dispatch.</small></div><span class="b ok">On time</span></div>`}</section></div>`;
  else{const LIM=12,shownTop=holdAll?top:top.slice(0,LIM);
