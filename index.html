@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#c8436f">
 <title>Rifah's Kaleidoscope</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👗</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -118,7 +118,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:2.5px solid var(--br);outl
 .sbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:8px;border:1.5px solid var(--ln);border-radius:12px;font-weight:700;font-size:13.5px;color:var(--ink2)}
 .sbtn:hover{border-color:var(--br);color:var(--br)}
 .col{min-width:0;display:flex;flex-direction:column}
-.page{width:100%;max-width:1160px;margin:0 auto;padding:32px 34px 90px}
+.page{width:100%;min-width:0;max-width:1160px;margin:0 auto;padding:32px 34px 90px}
+.card,.tcard,.w{min-width:0;max-width:100%}
+.w,th{position:relative}
 .mtop,.scrim,.fab{display:none}
 .offl{display:flex;align-items:center;gap:10px;justify-content:center;padding:10px 16px;background:var(--wnb);color:var(--wn);font-weight:700;font-size:14px;text-align:center}
 
@@ -165,7 +167,7 @@ button.lr:hover b{color:var(--br)}
 .bar b{text-align:right;font-variant-numeric:tabular-nums}
 .sec{margin:6px 0 16px}
 .sec h2{font-size:25px;margin-bottom:12px}
-.sheets{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px}
+.sheets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:20px}
 .sheet{text-align:left;background:var(--sf);border:1px solid var(--ln);border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;transition:border-color .15s}
 .sheet:hover{border-color:var(--br)}
 .sheet .ki{margin-bottom:4px}
@@ -190,7 +192,7 @@ button.lr:hover b{color:var(--br)}
 table{border-collapse:collapse;width:100%;font-size:14.5px}
 th{padding:12px 14px;text-align:left;font-size:13px;font-weight:800;color:var(--ink3);background:var(--sf2);border-bottom:1px solid var(--ln);white-space:nowrap}
 td{padding:13px 14px;border-bottom:1px solid var(--ln);white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
-td.wrap{white-space:normal;min-width:200px}
+td.wrap{white-space:normal;min-width:220px}
 td.note{white-space:normal;min-width:170px;max-width:260px}
 .nt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--ink2);font-size:13.5px}
 tbody tr:last-child td{border-bottom:0}
@@ -213,6 +215,7 @@ td.act{text-align:right}
 .b.in{background:var(--inb);color:var(--in)}
 .b.vi{background:var(--vib);color:var(--vi)}
 .b.er{background:var(--erb);color:var(--er)}
+.bwrap{display:inline-flex;flex-wrap:wrap;gap:5px;max-width:240px}
 .b.mu{background:var(--sf2);color:var(--ink3);border:1px solid var(--ln)}
 
 /* ---------- dialogs ---------- */
@@ -321,6 +324,24 @@ dialog form{display:flex;flex-direction:column;min-height:0;flex:1}
 .aside ul{display:none}
 .aside .bloom{width:300px;height:300px;right:-90px;bottom:-120px}
 }
+
+/* ---------- tablets & phones: tables become neat cards ---------- */
+@media(max-width:900px){
+.rt thead{display:none}
+.rt,.rt tbody{display:block}
+.rt tr{display:flex;flex-direction:column;gap:3px;padding:16px;border-bottom:1px solid var(--ln)}
+.rt tbody tr:last-child{border-bottom:0}
+.rt td{display:flex;justify-content:space-between;gap:16px;padding:3px 0;border:0;white-space:normal;max-width:none;text-align:right;overflow:visible}
+.rt td::before{content:attr(data-label);color:var(--ink3);font-size:13px;font-weight:700;text-align:left;flex:none}
+.rt td[data-p]{order:-1;font-size:17px;text-align:left;justify-content:flex-start;margin-bottom:4px}
+.rt td[data-p]::before,.rt td.act::before{display:none}
+.rt td:empty{display:none}
+.rt td.wrap,.rt td.note{min-width:0;max-width:none}
+.rt td.note .nt{-webkit-line-clamp:4;text-align:right}
+.rt td.act{justify-content:flex-end;padding-top:8px;width:auto}
+.rt .bwrap{justify-content:flex-end}
+.rt tr{background:var(--sf)}
+}
 /* ---------- phones: tables become cards, dialogs become bottom sheets ---------- */
 @media(max-width:720px){
 .ph h1{font-size:32px}
@@ -336,19 +357,9 @@ dialog form{display:flex;flex-direction:column;min-height:0;flex:1}
 .tools{padding:12px}
 .search{max-width:none;min-width:100%}
 .count{margin-left:0}
-.rt thead{display:none}
-.rt,.rt tbody{display:block}
-.rt tr{display:flex;flex-direction:column;gap:3px;padding:16px;border-bottom:1px solid var(--ln)}
-.rt tbody tr:last-child{border-bottom:0}
-.rt td{display:flex;justify-content:space-between;gap:16px;padding:3px 0;border:0;white-space:normal;max-width:none;text-align:right;overflow:visible}
-.rt td::before{content:attr(data-label);color:var(--ink3);font-size:13px;font-weight:700;text-align:left;flex:none}
-.rt td[data-p]{order:-1;font-size:17px;text-align:left;justify-content:flex-start;margin-bottom:4px}
-.rt td[data-p]::before,.rt td.act::before{display:none}
-.rt td:empty{display:none}
-.rt td.wrap,.rt td.note{min-width:0;max-width:none}
-.rt td.note .nt{-webkit-line-clamp:4;text-align:right}
-.rt td.act{justify-content:flex-end;padding-top:8px;width:auto}
+.rt .bwrap{justify-content:flex-end}
 .sheets{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sheet:last-child:nth-child(odd){grid-column:1/-1}
 .sheet{padding:14px}
 .fab{display:grid;place-items:center;position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:60px;height:60px;border-radius:20px;background:var(--br);color:var(--brt);box-shadow:0 14px 30px -10px var(--br);z-index:30}
 dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:24px 24px 0 0;max-height:94vh}
@@ -365,6 +376,81 @@ dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:24px 24px 0 0;max
 .tbody h2{font-size:30px}
 .tstats b{font-size:24px}
 }
+
+/* cute dress rail illustration */
+.rail{position:absolute;pointer-events:none}
+.hero .rail{right:28px;bottom:0;height:150px;width:auto}
+.tpanel .rail{left:50%;bottom:0;height:165px;width:auto;transform:translateX(-50%)}
+.aside .rail{right:44px;bottom:0;height:270px;width:auto}
+.hero>div{max-width:min(560px,calc(100% - 270px))}
+.kpis.k3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.seg{display:flex;gap:6px;padding:6px;background:var(--sf);border:1px solid var(--ln);border-radius:18px;margin:4px 0 18px;overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:8px 16px;border-radius:13px;font-weight:800;color:var(--ink2);white-space:nowrap}
+.seg button:hover{color:var(--br)}
+.seg button.on{background:var(--br);color:var(--brt)}
+.places{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.hbar-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.mt .ic{color:var(--br)}
+@media(max-width:720px){
+.hero .rail{display:none}
+.hero>div{max-width:none}
+.kpis.k3{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kpis.k3 .kpi{padding:12px}
+.kpis.k3 .kh{display:none}
+.kpis.k3 .kv{font-size:28px}
+.kpis.k3 .ki{width:32px;height:32px;margin-bottom:6px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:5px}
+.seg button{flex-direction:column;gap:4px;padding:8px 4px;font-size:12.5px;line-height:1.2;white-space:normal;text-align:center;min-height:60px}
+.bar{grid-template-columns:minmax(100px,140px) 1fr 28px;gap:10px}
+.aside .rail{height:150px;right:16px}
+.tpanel .rail{height:130px}
+}
+
+
+/* ---------- extra polish for every screen size ---------- */
+@media(max-width:1200px){.sheets{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:721px) and (max-width:900px){
+.rt tbody{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px}
+.rt tr{border:1px solid var(--ln)!important;border-radius:18px}
+.tcard .w{background:var(--sf2)}
+}
+@media(max-width:900px){
+.rt td.wrap,.rt td.note{flex-direction:column;align-items:flex-start;gap:2px;text-align:left}
+.rt td.note .nt{text-align:left}
+.rt td.wrap .bwrap{justify-content:flex-start}
+}
+@media(max-width:980px){
+.aside .rail{position:static;display:block;height:130px;margin:4px auto 0}
+.aside p{display:none}
+.aside>div:last-child{display:none}
+}
+@media(max-width:480px){.tico{display:none}}
+/* ---------- small phones ---------- */
+@media(max-width:480px){
+.htop{gap:8px}
+.htop b{font-size:19px}
+.htop .btn span{display:none}
+.htop .btn{width:42px;padding:0}
+.hwrap h1{font-size:32px}
+.tstats{gap:6px}
+.tstats div{padding:9px 10px}
+.tstats b{font-size:22px}
+.tstats small{font-size:11.5px}
+.ph h1{font-size:29px}
+.mtop .btn span{display:none}
+.mtop .btn{width:42px;padding:0}
+.sheet .kv{font-size:28px}
+.chip{padding:6px 11px}
+}
+@media(max-width:360px){
+.htop b{display:none}
+.kpis.k3 .kl{font-size:12px}
+.sheets{grid-template-columns:1fr}
+.page{padding-left:12px;padding-right:12px}
+}
+/* ---------- large screens ---------- */
+@media(min-width:1500px){.page{max-width:1280px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style></head>
 <body>
@@ -412,6 +498,7 @@ x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
 pencil:'<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
 inbox:'<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
 check:'<polyline points="20 6 9 17 4 12"/>',
+dress:'<path d="M12 2.5v2"/><path d="M8.5 7 12 4.5 15.5 7"/><path d="M9.5 7h5l1 4 3.5 10H5l3.5-10z"/><path d="M8.5 11h7"/>',
 tag:'<path d="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.42l8.7 8.7a2.43 2.43 0 0 0 3.42 0l6.58-6.58a2.43 2.43 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r="1" fill="currentColor"/>',
 heart:'<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
 alert:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
@@ -428,13 +515,21 @@ eye:'<path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .
 rupee:'<path d="M6 3h12"/><path d="M6 8h12"/><path d="m6 13 8.5 8"/><path d="M6 13h3"/><path d="M9 13c6.67 0 6.67-10 0-10"/>',
 spark:'<path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0L14.06 8.5A2 2 0 0 0 15.5 9.94l6.14 1.58a.5.5 0 0 1 0 .96L15.5 14.06a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z"/>'};
 const ic=(n,s=20)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]||''}</svg>`;
-const mark=()=>`<svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="17" height="17" rx="5" fill="#e5658f"/><rect x="21" y="2" width="17" height="17" rx="5" fill="#f2b443"/><rect x="2" y="21" width="17" height="17" rx="5" fill="#9d76d6"/><rect x="21" y="21" width="17" height="17" rx="5" fill="#f7a8c2"/></svg>`;
-function bloom(){return ''}
+const mark=()=>`<svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="12" fill="#fde4ee"/><path d="M20 10V7.6a2.2 2.2 0 1 0-2.2-2.2" fill="none" stroke="#e9a83a" stroke-width="1.8" stroke-linecap="round"/><path d="M12.5 13.5 20 10l7.5 3.5" fill="none" stroke="#e9a83a" stroke-width="1.8" stroke-linejoin="round"/><path d="M16 13.5h8l1 4.5 6 15q-11 3.2-22 0l6-15z" fill="#e5658f"/><path d="M17.3 13.5q2.7 4.2 5.4 0z" fill="#fde4ee"/><path d="M14.2 18h11.6" stroke="#f2b443" stroke-width="1.6"/><circle cx="17" cy="25" r="1" fill="#fff"/><circle cx="23" cy="25" r="1" fill="#fff"/><circle cx="20" cy="29" r="1" fill="#fff"/></svg>`;
+/* cute dresses hanging on a rail — used on the start screen, sign-in and dashboards */
+function dress(x,t,c,c2){
+ let s=`<path d="M${x} 34V25a5.5 5.5 0 1 1 5.5-5.5" fill="none" stroke="#f4c069" stroke-width="2.4" stroke-linecap="round"/><path d="M${x-24} 47 ${x} 34l24 13" fill="none" stroke="#f4c069" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+ if(t==='a')s+=`<path d="M${x-16} 46l-12 7 4 22 9-4z M${x+16} 46l12 7-4 22-9-4z" fill="${c}"/><path d="M${x-16} 46h32l14 104q-30 8-60 0z" fill="${c}"/><path d="M${x-7} 46q7 13 14 0z" fill="${c2}"/><path d="M${x-28} 139q28 7 56 0" fill="none" stroke="${c2}" stroke-width="4" stroke-linecap="round"/>${[[-8,75],[8,75],[0,92],[-14,108],[14,108],[0,122]].map(([a,b])=>`<circle cx="${x+a}" cy="${b}" r="2.2" fill="${c2}"/>`).join('')}`;
+ if(t==='f')s+=`<ellipse cx="${x-17}" cy="52" rx="8" ry="7" fill="${c}"/><ellipse cx="${x+17}" cy="52" rx="8" ry="7" fill="${c}"/><path d="M${x-15} 46h30l-2 36h-26z" fill="${c}"/><path d="M${x-13} 82h26l30 66q-43 12-86 0z" fill="${c}"/><rect x="${x-14}" y="79" width="28" height="6" rx="3" fill="${c2}"/><path d="M${x-6} 46q6 10 12 0z" fill="${c2}"/><path d="M${x} 86v62M${x-8} 86l-14 60M${x+8} 86l14 60" stroke="${c2}" stroke-opacity=".55" stroke-width="1.6"/><path d="M${x-42} 146q10 7 21 0q10 7 21 0q10 7 21 0q10 7 21 0" fill="none" stroke="${c2}" stroke-width="3"/>`;
+ if(t==='k')s+=`<path d="M${x-17} 46l-11 6 2 40 9-1z M${x+17} 46l11 6-2 40-9-1z" fill="${c}"/><path d="M${x-17} 46h34l3 104h-40z" fill="${c}"/><path d="M${x-6} 46l6 12 6-12z" fill="${c2}"/><path d="M${x-17} 50l9-4 30 78-8 6z" fill="${c2}" fill-opacity=".85"/><path d="M${x-12} 62l6-2M${x-6} 78l6-2M${x} 94l6-2M${x+6} 110l6-2" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/><path d="M${x-20} 142h40" stroke="${c2}" stroke-width="4"/>`;
+ return s}
+function rail(v){const P={1:[['a','#f6a5c0'],['f','#f5c46e'],['k','#c9b0f3']],2:[['k','#c9b0f3'],['a','#f6a5c0'],['f','#f5c46e']]}[v===2?2:1];
+ return `<svg class="rail" viewBox="0 0 260 168" aria-hidden="true"><path d="M14 18h232" stroke="#f4c069" stroke-width="4" stroke-linecap="round"/><circle cx="14" cy="18" r="5" fill="#f4c069"/><circle cx="246" cy="18" r="5" fill="#f4c069"/>${P.map(([t,c],i)=>dress(60+i*70,t,c,'#fff7fa')).join('')}</svg>`}
 
 /* ---------- the two websites ---------- */
 const SITES={
-1:{name:'Stock Studio',desc:'Your designs, stock in hand, customer assignments and parcels.',icon:'box',
- nav:[['dash','Dashboard','grid'],['stock','Stock list','tag'],['reg','Stock register','list'],['asg','Assignments','users'],['del','Deliveries','truck']]},
+1:{name:'Stock Studio',desc:'Your designs, stock in hand, customer assignments and parcels.',icon:'dress',
+ nav:[['dash','Dashboard','grid'],['stock','Stock list','dress'],['reg','Stock register','list'],['asg','Assignments','users'],['del','Deliveries','truck']]},
 2:{name:'Order Care',desc:'Courier issues, stitching delays, exchanges, international and express orders.',icon:'heart',
  nav:[['dash','Dashboard','grid'],['courier','Courier issues','alert'],['delays','Stitching delays','scissors'],['exch','Exchanges & disputes','repeat'],['intl','International orders','globe'],['express','Express deliveries','zap']]}};
 
@@ -444,7 +539,7 @@ NOTES=fl('notes','Notes','textarea',{full:1,ph:'Anything to remember about this'
 
 /* ---------- what each section holds ---------- */
 const M={
-stock:{site:1,t:'Stock list',s:'design',icon:'tag',d:'Your designs, prices and photos. Tap a design name to see its photo.',prim:'name',sort:'name',empty:['No designs yet','Add your first design to build your catalogue.'],
+stock:{site:1,t:'Stock list',s:'design',icon:'dress',d:'Your designs, prices and photos. Tap a design name to see its photo.',prim:'name',sort:'name',empty:['No designs yet','Add your first design to build your catalogue.'],
  f:[fl('name','Design name','text',{req:1}),fl('coll','Collection','text',{def:'KOTA DORIYA'}),fl('price','Price (Rs.)','number'),fl('ref','Description','text',{full:1}),NOTES,fl('image','Photo (optional)','image')]},
 reg:{site:1,t:'Stock register',s:'stock entry',icon:'list',d:'Every piece that comes in or goes out. Holding = Qty in minus Qty out.',prim:'name',sort:'date',empty:['No stock entries yet','Log pieces as they come in or go out.'],
  f:[fl('date','Date','date'),fl('name','Design name','text',{req:1,dl:'stocks'}),fl('stitch','Stitch type','text',{dl:'stitch'}),fl('size','Size','text',{dl:'sizes'}),fl('from','Received from'),fl('to','Delivered to'),fl('dd','Date delivered','date'),fl('in','Qty in','number',{def:1}),fl('out','Qty out','number'),fl('status','Packing','select',{o:['','Packed'],ol:{'':'Unpacked'}}),NOTES],
@@ -459,14 +554,15 @@ delays:{site:2,t:'Stitching delays',s:'delayed order',icon:'scissors',d:'Orders 
  f:[fl('order','Order ID'),fl('cust','Customer','text',{req:1}),fl('stock','Design','text',{dl:'stocks'}),fl('progress','Progress','select',{o:['Waiting','Stitching','Done']}),NOTES]},
 exch:{site:2,t:'Exchanges & disputes',s:'exchange',icon:'repeat',d:'Customers who need a missing part, an alteration or a swap.',prim:'name',st:'process',done:['Dispatched','Resolved'],empty:['No exchanges','Add one when a customer asks for a swap or a fix.'],
  f:[fl('name','Customer','text',{req:1}),fl('stock','Design','text',{dl:'stocks'}),fl('pkg','What they received'),fl('issue','Issue'),fl('process','Status','select',{o:['Pending','Dispatched','Resolved']}),NOTES]},
-intl:{site:2,t:'International orders',s:'international order',icon:'globe',d:'Orders going abroad, one row for each design.',prim:'name',st:'process',done:['Dispatched','Delivered'],empty:['No international orders','Add one row for each design ordered.'],
+intl:{site:2,t:'International orders',s:'international order',icon:'globe',d:'Orders going abroad. One row for each customer, with all the designs they ordered.',prim:'name',st:'process',done:['Dispatched','Delivered'],empty:['No international orders','Add one row for each design ordered.'],
  f:[fl('name','Customer','text',{req:1}),fl('order','Design','text',{dl:'stocks'}),fl('process','Status','select',{o:['Pending','Stitching','Ready','Dispatched','Delivered']}),fl('due','Expected on'),NOTES]},
 express:{site:2,t:'Express deliveries',s:'express order',icon:'zap',d:'Orders promised fast. Dispatch these first.',prim:'name',st:'status',done:['Dispatched','Delivered'],empty:['No express orders','Add one when a customer needs it fast.'],
  f:[fl('order','Order ID'),fl('name','Customer','text',{req:1}),fl('product','Design','text',{dl:'stocks'}),fl('size','Size','text',{dl:'sizes'}),fl('promised','Promised on'),fl('dispatch','Dispatch on'),fl('status','Status','select',{o:['Pending','Dispatched','Delivered']}),NOTES]}};
 
 const TONE={Pending:'wn',Open:'wn',Waiting:'wn',No:'wn','In progress':'in',Stitching:'in',Dispatched:'in','Out for Delivery':'vi',Ready:'vi',Packed:'ok',Done:'ok',Resolved:'ok',Delivered:'ok',Yes:'ok',Returned:'er'};
 const badge=v=>v?`<span class="b ${TONE[v]||'mu'}">${esc(v)}</span>`:'';
-const isDone=(m,r)=>M[m].done.includes(r[M[m].st]);
+const intlDone=r=>(r.items||[]).length>0&&r.items.every(i=>M.intl.done.includes(i.process));
+const isDone=(m,r)=>m==='intl'?intlDone(r):M[m].done.includes(r[M[m].st]);
 const isOver=r=>!['Delivered','Returned'].includes(r.status)&&!!r.disp&&daysSince(r.disp)>=25;
 const pr=n=>{const s=(DB[1].stock||[]).find(s=>s.name===n);return s?(+s.price||0):0};
 
@@ -485,14 +581,20 @@ return{
 courier:r([['Bindu Kaza','Not delivering','Yes'],['Nellikayil Rajeev','Not delivering','Yes'],['Akansha Das','Not delivered','No'],['Sahana Maharajan','Not delivered','No'],['Ramani','Returned','No'],['Alisha Tamang','Not paying','No']].map(([name,problem,ticket])=>({name,problem,courier:'Delhivery',ticket,progress:'Open'}))),
 delays:r([['Manual','C Syamala','Gul-E-Aasman','Done'],['1037','Akansha','Gul-E-Aasman','Done'],['1019','Prity Agarwal','Blush Posey','Done'],['1057','Thevar Sneha','Gul-E-Aasman','Done'],['1058','Sivaranjini Rajendran','Gul-E-Aasman','Done'],['1060','Mehta','Indigo Bloom','Done'],['1071','Sailaja Kota','Indigo Bloom','Done'],['1076','Shilpa Kulkarni','Indigo Bloom','Done'],['1094','Shyamala Garnepudi','Indigo Bloom / Gul-E-Aasman','Done'],['1097','Janhvi Chitturi','Gul-E-Aasman','Done'],['1105','Bindu Balakrishnan','Indigo Bloom','Done'],['1121','Mrinalini Sharma','Nizhal Verse','Stitching']].map(([order,cust,stock,progress])=>({order,cust,stock,progress}))),
 exch:r([['Yashitha Sharma','','','','Dispatched',''],['Prajakta','Gulmohar Pink','Received top','','Dispatched','Size L'],['Anusha Singh','Indigo Bloom','Received top','','Dispatched',''],['Rajitha Raji','Monochrome Muse','Received top and bottom','','Dispatched',''],['Athiya Begum','Monochrome Mehfil','Received top','Have to alter','Dispatched',''],['Vasudha Sreekantam','Sunheri Dori','Size XXL','Yet to add','Dispatched',''],['Jayanthi Jayaraman','Mehroom Mocha / Earthy Cotton Set','','','Pending','']].map(([name,stock,pkg,issue,process,notes])=>({name,stock,pkg,issue,process,notes}))),
-intl:r([['Raagah','Gul-E-Aasman','Stitching'],['Raagah','Monochrome Muse','Ready'],['Raagah','Sunheri Dori','Ready'],['Raagah','Sky Loom','Stitching'],['Raagah','Gulmohar Pink','Ready'],['Raagah','Ziya Plum Set','Stitching'],['Raagah','Whispers Of Blue','Ready'],['Raagah','Jamuni Jharokha','Ready'],['Raagah','Bindi and Borders','Ready'],['Sharadha Limbu','Whispers Of Blue','Stitching','Wednesday'],['Sharadha Limbu','Indigo Bloom','Ready'],['Sharadha Limbu','Blush Posey','Stitching','Wednesday'],['Alisha Tamang','Indigo Bloom','Pending']].map(([name,order,process,due])=>({name,order,process,due:due||''}))),
+intl:r([['Raagah','',[['Gul-E-Aasman','Stitching'],['Monochrome Muse','Ready'],['Sunheri Dori','Ready'],['Sky Loom','Stitching'],['Gulmohar Pink','Ready'],['Ziya Plum Set','Stitching'],['Whispers Of Blue','Ready'],['Jamuni Jharokha','Ready'],['Bindi and Borders','Ready']]],['Sharadha Limbu','',[['Whispers Of Blue','Stitching','Wednesday'],['Indigo Bloom','Ready'],['Blush Posey','Stitching','Wednesday']]],['Alisha Tamang','',[['Indigo Bloom','Pending']]]].map(([name,country,its])=>({name,country,items:its.map(([order,process,due])=>({order,process,due:due||'',notes:''}))}))),
 express:r([['1151','Jayanthi Jayaraman','Mehroom Mocha / Earthy Cotton Set','XL','24 Sept','Wednesday'],['1168','Amal S Anniyan','Indigo Bloom','L','1 Oct','Wednesday'],['1190','Nellikkayil','Sunheri Dori','M','','Saturday'],['1191','Sudha','Monochrome Mehfil','L','','Saturday'],['1148','Pragya Singh','Mehroom Mocha','M','Before 28th','Wednesday']].map(([order,name,product,size,promised,dispatch])=>({order,name,product,size,promised,dispatch,status:'Pending'})))}}
 
 /* make sure loaded data always has the right shape, so nothing breaks */
 function norm1(o,flag){o=o&&typeof o==='object'?o:{};['stock','reg','asg','del'].forEach(k=>{if(!Array.isArray(o[k])){o[k]=[];flag&&(flag.v=1)}});
  o.asg=o.asg.map(r=>{if(Array.isArray(r.items))return r;flag&&(flag.v=1);return{id:r.id,date:r.date,cust:r.cust,notes:'',items:[{name:r.name||'',stitch:r.stitch||'',size:r.size||'',qty:r.qty||1,notes:r.notes||''}],by:r.by,at:r.at}});
  ['stock','reg','asg','del'].forEach(k=>o[k].forEach(r=>{if(!r.id){r.id=uid();flag&&(flag.v=1)}}));return o}
-function norm2(o){o=o&&typeof o==='object'?o:{};S2K.forEach(k=>{if(!Array.isArray(o[k]))o[k]=[];o[k].forEach(r=>{if(!r.id)r.id=uid()})});return o}
+function norm2(o,flag){o=o&&typeof o==='object'?o:{};S2K.forEach(k=>{if(!Array.isArray(o[k]))o[k]=[];o[k].forEach(r=>{if(!r.id)r.id=uid()})});
+ if(o.intl.some(r=>!Array.isArray(r.items))){const g=[],by={};o.intl.forEach(r=>{if(Array.isArray(r.items)){g.push(r);return}
+   const k=String(r.name||'').trim().toLowerCase();let c=by[k];
+   if(!c){c=by[k]={id:r.id,name:String(r.name||'').trim(),country:'',notes:'',items:[],by:r.by,at:r.at};g.push(c)}
+   c.items.push({order:r.order||'',process:r.process||'Pending',due:r.due||'',notes:r.notes||''})});
+  o.intl=g;if(flag)flag.v=1}
+ return o}
 
 /* ---------- storage (Supabase table "kv") ---------- */
 async function load(k){const{data,error}=await sb.from('kv').select('j').eq('k',k).maybeSingle();if(error)throw error;return data?JSON.parse(data.j):null}
@@ -519,10 +621,9 @@ const themeBtn=cls=>`<button class="${cls}" data-act="theme" title="Switch light
 /* ---------- sign in ---------- */
 const mk=u=>({id:u.id,name:(u.user_metadata&&u.user_metadata.name)||u.email||'Friend',role:u.app_metadata&&u.app_metadata.role==='admin'?'admin':'staff'});
 const firstName=()=>{const n=(me&&me.name||'').split(/[ @.]/)[0]||'there';return n.charAt(0).toUpperCase()+n.slice(1)};
-function loginView(){site=null;document.body.className='';$('#app').innerHTML=`<div class="auth"><div class="aside buti">${bloom('login')}<div class="brand">${mark()}<div><b>Rifah's Kaleidoscope</b><small>Kota Doriya studio</small></div></div>
-<div><h1>Every piece, every parcel, every customer.</h1><p>Two simple spaces: Stock Studio for your designs and stock, Order Care for customer issues and special orders.</p></div>
-<ul><li>${ic('check',18)}<span>Your data stays saved when you log out</span></li><li>${ic('check',18)}<span>Each staff member has their own login</span></li><li>${ic('check',18)}<span>Works on phone, tablet and computer</span></li></ul></div>
-<div class="formside"><form class="fcard" id="lf" novalidate><div><h2>Welcome back</h2><p class="mu" style="margin-top:4px">Sign in to continue.</p></div>
+function loginView(){site=null;document.body.className='';$('#app').innerHTML=`<div class="auth"><div class="aside buti"><div class="brand">${mark()}<div><b>Rifah's Kaleidoscope</b></div></div>
+<div><h1>Stock Studio and Order Care</h1><p>Your designs, stock, parcels and customer orders in one place.</p></div>${rail(1)}<div></div></div>
+<div class="formside"><form class="fcard" id="lf" novalidate><div><h2>Hello</h2><p class="mu" style="margin-top:4px">Sign in to continue.</p></div>
 <div class="fld"><label for="u">Email</label><input id="u" type="email" inputmode="email" placeholder="you@example.com" autocomplete="username" required></div>
 <div class="fld"><label for="p">Password</label><div class="pwrap"><input id="p" type="password" autocomplete="current-password" required><button type="button" data-act="peek" aria-label="Show password">${ic('eye',18)}</button></div></div>
 <div class="er-msg" id="er" role="alert"></div><button class="btn btn-pri big" id="go" type="submit">Sign in</button>
@@ -540,7 +641,7 @@ async function doAuth(){const b=$('#go'),e=$('#er'),em=$('#u').value.trim(),pw=$
 async function start(u){me=mk(u);$('#app').innerHTML='<div class="load"><div><div class="spin"></div>Loading your data…</div></div>';
  try{const[a,b]=await Promise.all([load(KEY[1]),load(KEY[2])]);
   if(!a){DB[1]=seed1();try{await store(KEY[1],DB[1])}catch(e){}}else{const f={v:0};DB[1]=norm1(a,f);if(f.v){try{await store(KEY[1],DB[1])}catch(e){}}}
-  if(!b){DB[2]=seed2();try{await store(KEY[2],DB[2])}catch(e){}}else DB[2]=norm2(b)}
+  if(!b){DB[2]=seed2();try{await store(KEY[2],DB[2])}catch(e){}}else{const f2={v:0};DB[2]=norm2(b,f2);if(f2.v){try{await store(KEY[2],DB[2])}catch(e){}}}}
  catch(e){$('#app').innerHTML=`<div class="load"><div class="msg"><div class="eico">${ic('wifi',26)}</div><h2>Cannot reach the database</h2><p>Nothing was changed. Check your internet connection, then try again.</p><div class="row"><button class="btn btn-pri" onclick="location.reload()">Try again</button><button class="btn" data-act="logout">Log out</button></div></div></div>`;return}
  route()}
 async function logout(){try{await sb.auth.signOut()}catch(e){}me=null;DB={1:null,2:null};history.replaceState(null,'',location.pathname+location.search);loginView()}
@@ -561,7 +662,7 @@ const offBanner=()=>`<div class="offl" id="offl"${navigator.onLine?' hidden':''}
 function stats1(){const d=DB[1];let hold=0;d.reg.forEach(r=>hold+=(+r.in||0)-(+r.out||0));const open=d.del.filter(r=>!['Delivered','Returned'].includes(r.status));return{hold,open:open.length,over:open.filter(isOver).length,designs:d.stock.length}}
 function stats2(){const o={};let total=0;S2K.forEach(m=>{o[m]=DB[2][m].filter(r=>!isDone(m,r)).length;total+=o[m]});o.total=total;return o}
 function home(){document.body.className='';const a=stats1(),b=stats2(),
- tile=(n,st)=>`<button class="tile s${n}" data-act="go" data-s="${n}" data-v="dash"><div class="tpanel buti">${bloom('tile'+n)}<span class="tnum">${n}</span><span class="tico">${ic(SITES[n].icon,24)}</span></div><div class="tbody"><h2>${SITES[n].name}</h2><p>${SITES[n].desc}</p><div class="tstats">${st.map(([v,l,late])=>`<div class="${late?'late':''}"><b>${v}</b><small>${l}</small></div>`).join('')}</div><span class="tgo">Open ${SITES[n].name}${ic('right',18)}</span></div></button>`;
+ tile=(n,st)=>`<button class="tile s${n}" data-act="go" data-s="${n}" data-v="dash"><div class="tpanel buti">${rail(n)}<span class="tico">${ic(SITES[n].icon,24)}</span></div><div class="tbody"><h2>${SITES[n].name}</h2><p>${SITES[n].desc}</p><div class="tstats">${st.map(([v,l,late])=>`<div class="${late?'late':''}"><b>${v}</b><small>${l}</small></div>`).join('')}</div><span class="tgo">Open ${SITES[n].name}${ic('right',18)}</span></div></button>`;
  $('#app').innerHTML=`<div class="home"><header class="htop">${mark()}<b>Rifah's Kaleidoscope</b><span class="sp"></span>${themeBtn('btn sm')}<button class="btn sm" data-act="logout">${ic('logout',16)}<span>Log out</span></button></header>${offBanner()}
 <main class="hwrap"><h1>Hello, ${esc(firstName())}</h1><p>Choose where you want to work. You can switch between them any time.</p>
 <div class="tiles">${tile(1,[[a.hold,'pieces in holding'],[a.open,'parcels on the way'],[a.over,'overdue',a.over>0]])}${tile(2,[[b.total,'need attention',b.total>0],[b.courier,'courier issues'],[b.express,'express to send']])}</div></main></div>`}
@@ -575,14 +676,14 @@ function draw(){document.body.className='s'+site;const S=SITES[site],other=site=
  body=view==='dash'?(site===1?dash1():dash2()):view==='set'?sett():list(view),
  ini=esc((me.name||'?').trim().charAt(0).toUpperCase());
  $('#app').innerHTML=`<div class="shell s${site}"><aside class="side" aria-label="Menu">
-<button class="brand" data-act="home" title="Back to the start screen">${mark()}<span><b>Rifah's Kaleidoscope</b><small>Kota Doriya studio</small></span></button>
-<div class="switch" role="group" aria-label="Choose website">${[1,2].map(n=>`<button class="${n===site?'on':''}" data-act="go" data-s="${n}" data-v="dash"${n===site?' aria-current="true"':''}><i>${n}</i>${SITES[n].name}</button>`).join('')}</div>
+<button class="brand" data-act="home" title="Back to the start screen">${mark()}<span><b>Rifah's Kaleidoscope</b></span></button>
+<div class="switch" role="group" aria-label="Choose website">${[1,2].map(n=>`<button class="${n===site?'on':''}" data-act="go" data-s="${n}" data-v="dash"${n===site?' aria-current="true"':''}>${ic(SITES[n].icon,18)}${SITES[n].name}</button>`).join('')}</div>
 <nav aria-label="${S.name}">${S.nav.map(([k,l,i])=>{const c=navCount(k);return `<button class="nv${k===view?' on':''}" data-act="go" data-s="${site}" data-v="${k}"${k===view?' aria-current="page"':''}>${ic(i)}<span>${l}</span>${c.n?`<span class="cnt${c.er?' er':''}">${c.n}</span>`:''}</button>`}).join('')}</nav>
 <div class="sfoot"><button class="nv${view==='set'?' on':''}" data-act="go" data-s="${site}" data-v="set">${ic('sliders')}<span>Settings</span></button>
 <div class="me"><span class="av">${ini}</span><div><b>${esc(me.name)}</b><small>${me.role}</small></div></div>
 <div class="srow">${themeBtn('sbtn')}<button class="sbtn" data-act="logout">${ic('logout',17)}<span>Log out</span></button></div></div></aside>
 <div class="scrim" data-act="scrim"></div>
-<div class="col"><header class="mtop"><button class="ib" data-act="menu" aria-label="Open menu">${ic('menu')}</button><div class="mt"><i>${site}</i><b>${S.name}</b></div><button class="btn sm" data-act="go" data-s="${other}" data-v="dash" aria-label="Switch to ${SITES[other].name}">${ic('swap',16)}<span>${other}</span></button></header>${offBanner()}
+<div class="col"><header class="mtop"><button class="ib" data-act="menu" aria-label="Open menu">${ic('menu')}</button><div class="mt">${ic(S.icon,20)}<b>${S.name}</b></div><button class="btn sm" data-act="go" data-s="${other}" data-v="dash" aria-label="Switch to ${SITES[other].name}">${ic('swap',16)}<span>${SITES[other].name}</span></button></header>${offBanner()}
 <main class="page" id="main">${body}</main></div></div>
 <datalist id="stocks">${opts(stocks)}</datalist><datalist id="stitch">${opts(ST)}</datalist><datalist id="sizes">${opts(sizes)}</datalist>
 <datalist id="problems">${opts(['Not delivered','Not delivering','Returned','Not paying','Damaged parcel','Wrong address'])}</datalist><datalist id="couriers">${opts(['Delhivery','India Post','Blue Dart','DTDC','Shiprocket','Xpressbees'])}</datalist>`}
@@ -591,50 +692,40 @@ const head=()=>`<div class="ph"><div><h1>Hello, ${esc(firstName())}</h1><p>${new
 const kpi=(icon,l,v,h,o={})=>`<${o.go?`button data-act="go" data-s="${site}" data-v="${o.go}"`:'div'} class="kpi${o.late?' late':''}"><span class="ki">${ic(icon,20)}</span><span class="kl">${l}</span><span class="kv">${v}</span><span class="kh">${h}</span></${o.go?'button':'div'}>`;
 const lrow=(l,v,h,act)=>`<${act?`button ${act}`:'div'} class="lr"><div><b>${l}</b>${h?`<small>${h}</small>`:''}</div><span class="lv">${v}</span></${act?'button':'div'}>`;
 
-/* ---------- dashboard 1: Stock Studio ---------- */
-function dash1(){const D=DB[1],sm=(a,k)=>a.reduce((t,r)=>t+(+r[k]||0),0),tin=sm(D.reg,'in'),tout=sm(D.reg,'out'),
+/* ---------- dashboard: Stock Studio ---------- */
+let dashTab='hold';
+function dash1(){const D=DB[1],
  open=D.del.filter(r=>!['Delivered','Returned'].includes(r.status)),od=open.filter(isOver),by={};
  D.reg.forEach(r=>{const k=r.name||'Unnamed';by[k]=(by[k]||0)+(+r.in||0)-(+r.out||0)});
- const top=Object.entries(by).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,8),mx=Math.max(1,...top.map(t=>t[1])),
- val=D.asg.flatMap(r=>r.items||[]).reduce((t,it)=>t+(+it.qty||0)*pr(it.name),0);
+ const top=Object.entries(by).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]),mx=Math.max(1,...top.map(t=>t[1]));
  let holdS=0,holdU=0,packed=0,unpacked=0,unit=0;
  D.reg.forEach(r=>{const net=(+r.in||0)-(+r.out||0);if(r.stitch==='Unstitched')holdU+=net;else holdS+=net;
   if(net>0){if(r.status==='Packed')packed+=net;else unpacked+=net}
   const to=(r.to||'').trim().toLowerCase(),from=(r.from||'').trim().toLowerCase();
   if(to==='stitching unit')unit+=(+r.out||0);if(from==='stitching unit')unit-=(+r.in||0)});
- const hero=`<section class="hero buti">${bloom('h1')}<div><h2><span class="dot${od.length?' late':''}"></span>${od.length?`${od.length} ${od.length===1?'parcel is':'parcels are'} overdue`:'All parcels are on time'}</h2>
-<p>${od.length?'These were dispatched 25 or more days ago and are not delivered yet. Check with the courier.':open.length?`${open.length} ${open.length===1?'parcel is':'parcels are'} on the way. You are holding ${holdS+holdU} pieces.`:`No parcels are waiting. You are holding ${holdS+holdU} pieces.`}</p>
-<div class="row">${od.length?`<button class="btn btn-light" data-act="sheet" data-m="del" data-f="open">See overdue parcels</button>`:`<button class="btn btn-light" data-act="add" data-m="reg">${ic('plus',16)}<span>Add stock entry</span></button>`}<button class="btn btn-line" data-act="add" data-m="del">${ic('plus',16)}<span>Add delivery</span></button></div></div></section>`;
- return head()+hero+`<div class="kpis">${kpi('box','Pieces in holding',holdS+holdU,`${holdS} stitched, ${holdU} unstitched`,{go:'reg'})}${kpi('truck','Parcels on the way',open.length,'Not delivered or returned yet',{go:'del'})}${kpi('clock','Overdue',od.length,'25+ days since dispatch',{late:od.length>0,go:'del'})}${kpi('rupee','Assigned value','Rs. '+inr(val),'All customer assignments',{go:'asg'})}</div>
-<div class="g2"><section class="card pad"><div class="ch"><h2>Holding by design</h2></div><p class="cs">The designs you have the most pieces of.</p>${top.length?`<div class="bars">${top.map(([l,v])=>`<div class="bar"><span title="${esc(l)}">${esc(l)}</span><i><u style="width:${v/mx*100}%"></u></i><b>${v}</b></div>`).join('')}</div>`:emptyBox('Nothing in holding','Add stock entries to see them here.','reg')}</section>
-<section class="card pad"><div class="ch"><h2>Where your pieces are</h2></div><p class="cs">Only pieces you still hold.</p>${lrow('Stitched',holdS)}${lrow('Unstitched',holdU)}${lrow('At the stitching unit',unit,'Sent there, not back yet')}${lrow('Packed',packed)}${lrow('Not packed yet',unpacked)}</section></div>
-<div class="g2"><section class="card pad"><div class="ch"><h2>Parcels by status</h2></div><p class="cs">Every parcel in Deliveries.</p>${D.del.length?DS.map(s=>lrow(badge(s),D.del.filter(r=>r.status===s).length)).join(''):emptyBox('No parcels yet','Add a parcel when you dispatch it.','del')}</section>
-<section class="card pad"><div class="ch"><h2>Overdue parcels</h2></div><p class="cs">Dispatched 25 or more days ago, not delivered.</p>${od.length?od.map(r=>lrow(esc(r.cust),`<span class="b er">${daysSince(r.disp)} days</span>`,'Dispatched '+fd(r.disp),`data-act="edit" data-m="del" data-id="${r.id}"`)).join(''):`<div class="lr"><div><b>Nothing is overdue</b><small>Every parcel is within 25 days of dispatch.</small></div><span class="b ok">On time</span></div>`}
-<p class="cs" style="margin-top:14px">Catalogue: ${D.stock.length} designs. Received ${tin} pieces, sent out ${tout}.</p></section></div>
-<div class="sec"><h2>Quick add</h2><div class="row"><button class="btn" data-act="add" data-m="stock">${ic('tag',16)}<span>Design</span></button><button class="btn" data-act="add" data-m="reg">${ic('list',16)}<span>Stock entry</span></button><button class="btn" data-act="add" data-m="asg">${ic('users',16)}<span>Assignment</span></button><button class="btn" data-act="add" data-m="del">${ic('truck',16)}<span>Delivery</span></button></div></div>`}
+ const hold=holdS+holdU,
+ hero=`<section class="hero buti"><div><h2><span class="dot${od.length?' late':''}"></span>${od.length?`${od.length} ${od.length===1?'parcel is':'parcels are'} overdue`:'All parcels are on time'}</h2><p>${od.length?'Dispatched 25 or more days ago and not delivered yet. Check with the courier.':`You are holding ${hold} ${hold===1?'piece':'pieces'} of ${top.length} ${top.length===1?'design':'designs'}.`}</p></div>${rail(1)}</section>`,
+ kp=`<div class="kpis k3">${kpi('dress','Pieces in holding',hold,`${holdS} stitched, ${holdU} unstitched`,{go:'reg'})}${kpi('truck','On the way',open.length,'Parcels not delivered yet',{go:'del'})}${kpi('clock','Overdue',od.length,'25+ days since dispatch',{late:od.length>0,go:'del'})}</div>`,
+ tabs=[['hold','Holding by design','dress'],['where','Where your pieces are','box'],['del','Deliveries','truck']],
+ seg=`<div class="seg" role="tablist" aria-label="Dashboard views">${tabs.map(([k,l,i])=>`<button role="tab" aria-selected="${dashTab===k}" class="${dashTab===k?'on':''}" data-act="tab" data-t="${k}">${ic(i,18)}<span>${l}</span></button>`).join('')}</div>`;
+ let body;
+ if(dashTab==='where')body=`<div class="places">${kpi('dress','Stitched',holdS,'Ready-stitched pieces in hand')}${kpi('tag','Unstitched',holdU,'Fabric sets not stitched yet')}${kpi('scissors','At the stitching unit',unit,'Sent there, not back yet')}${kpi('box','Packed',packed,'Ready to send')}${kpi('inbox','Not packed yet',unpacked,'Still to pack')}</div>`;
+ else if(dashTab==='del')body=`<div class="g2"><section class="card pad"><div class="ch"><h2>Parcels by status</h2></div><p class="cs">Every parcel in Deliveries.</p>${D.del.length?DS.map(s=>lrow(badge(s),D.del.filter(r=>r.status===s).length,'',`data-act="sheet" data-m="del" data-f="all"`)).join(''):emptyBox('No parcels yet','Add a parcel when you dispatch it.','del')}</section>
+<section class="card pad"><div class="ch"><h2>Overdue parcels</h2></div><p class="cs">Dispatched 25 or more days ago, not delivered.</p>${od.length?od.map(r=>lrow(esc(r.cust),`<span class="b er">${daysSince(r.disp)} days</span>`,'Dispatched '+fd(r.disp),`data-act="edit" data-m="del" data-id="${r.id}"`)).join(''):`<div class="lr"><div><b>Nothing is overdue</b><small>Every parcel is within 25 days of dispatch.</small></div><span class="b ok">On time</span></div>`}</section></div>`;
+ else body=`<section class="card pad"><div class="hbar-head"><h2 style="font-size:25px">Holding by design</h2><span class="mu">${top.length} ${top.length===1?'design':'designs'}, ${hold} pieces</span></div><p class="cs">How many pieces of each design you have in hand.</p>${top.length?`<div class="bars">${top.map(([l,v])=>`<div class="bar"><span title="${esc(l)}">${esc(l)}</span><i><u style="width:${v/mx*100}%"></u></i><b>${v}</b></div>`).join('')}</div>`:emptyBox('Nothing in holding','Add stock entries to see them here.','reg')}</section>`;
+ return head()+hero+kp+seg+body+`<div class="sec" style="margin-top:22px"><h2>Quick add</h2><div class="row"><button class="btn" data-act="add" data-m="stock">${ic('dress',16)}<span>Design</span></button><button class="btn" data-act="add" data-m="reg">${ic('list',16)}<span>Stock entry</span></button><button class="btn" data-act="add" data-m="asg">${ic('users',16)}<span>Assignment</span></button><button class="btn" data-act="add" data-m="del">${ic('truck',16)}<span>Delivery</span></button></div></div>`}
 
-/* ---------- dashboard 2: Order Care ---------- */
+/* ---------- dashboard: Order Care ---------- */
 function dash2(){const D=DB[2],st=stats2(),
- todo=[];
- D.express.filter(r=>!isDone('express',r)).forEach(r=>todo.push(['express',r,esc(r.name),`Express: ${esc(r.product||'order')}${r.size?' ('+esc(r.size)+')':''}${r.dispatch?', dispatch '+esc(r.dispatch):''}`,'Send fast','er']));
- D.courier.filter(r=>!isDone('courier',r)&&r.ticket!=='Yes').forEach(r=>todo.push(['courier',r,esc(r.name),`${esc(r.problem||'Courier issue')}, no ticket yet`,'Raise ticket','wn']));
- D.exch.filter(r=>!isDone('exch',r)).forEach(r=>todo.push(['exch',r,esc(r.name),`Exchange: ${esc(r.stock||r.issue||'details needed')}`,'Send exchange','wn']));
- D.delays.filter(r=>!isDone('delays',r)).forEach(r=>todo.push(['delays',r,esc(r.cust),`${esc(r.stock||'Order')} at the stitching unit`,'Follow up','in']));
- D.intl.filter(r=>r.process==='Pending'||r.process==='Stitching').forEach(r=>todo.push(['intl',r,esc(r.name),`International: ${esc(r.order)}${r.due?', expected '+esc(r.due):''}`,r.process,TONE[r.process]]));
- const ticketWait=D.courier.filter(r=>!isDone('courier',r)&&r.ticket==='Yes'),
- ready=D.intl.filter(r=>r.process==='Ready');
- const hero=`<section class="hero buti">${bloom('h2')}<div><h2><span class="dot${st.total?' late':''}"></span>${st.total?`${st.total} ${st.total===1?'order needs':'orders need'} your attention`:'Everything is taken care of'}</h2>
-<p>${st.total?`Start with ${st.express?`${st.express} express ${st.express===1?'order':'orders'}`:'the list below'}, then courier tickets.`:'No open issues across all five lists. Lovely.'}</p>
-<div class="row">${st.express?`<button class="btn btn-light" data-act="sheet" data-m="express" data-f="open">${ic('zap',16)}<span>Express orders</span></button>`:''}<button class="btn ${st.express?'btn-line':'btn-light'}" data-act="sheet" data-m="courier" data-f="open">${ic('alert',16)}<span>Courier issues</span></button></div></div></section>`;
- const sheets=`<div class="sheets">${S2K.map(m=>{const t=D[m].length,o=st[m],pct=t?Math.round((t-o)/t*100):100;return `<button class="sheet" data-act="sheet" data-m="${m}" data-f="${o?'open':'all'}"><span class="ki">${ic(M[m].icon,19)}</span><b>${M[m].t}</b><span class="kv">${o}</span><small>${o===1?'open':'open'} of ${t} total</small><span class="prog" aria-label="${pct}% done"><u style="width:${pct}%"></u></span><small>${pct}% done</small></button>`}).join('')}</div>`;
- return head()+hero+sheets+`<div class="g2"><section class="card pad"><div class="ch"><h2>Do these first</h2></div><p class="cs">Tap any row to update it.</p>${todo.length?todo.slice(0,10).map(([m,r,n,h,b,t])=>lrow(n,`<span class="b ${t||'mu'}">${esc(b)}</span>`,h,`data-act="edit" data-m="${m}" data-id="${r.id}"`)).join('')+(todo.length>10?`<p class="cs" style="margin-top:12px">And ${todo.length-10} more in the lists.</p>`:''):`<div class="lr"><div><b>Nothing to do right now</b><small>New issues will show up here.</small></div><span class="b ok">All clear</span></div>`}</section>
-<section class="card pad"><div class="ch"><h2>Waiting on others</h2></div><p class="cs">Tickets raised with the courier and orders ready to send.</p>${ticketWait.map(r=>lrow(esc(r.name),badge('In progress'),`${esc(r.courier||'Courier')} ticket raised: ${esc(r.problem||'')}`,`data-act="edit" data-m="courier" data-id="${r.id}"`)).join('')}${lrow('International pieces ready',ready.length,'Ready to pack and dispatch',`data-act="sheet" data-m="intl" data-f="open"`)}${lrow('Exchanges sent',D.exch.filter(r=>r.process==='Dispatched').length,'Dispatched to the customer',`data-act="sheet" data-m="exch" data-f="done"`)}</section></div>
-<div class="sec"><h2>Quick add</h2><div class="row">${S2K.map(m=>`<button class="btn" data-act="add" data-m="${m}">${ic(M[m].icon,16)}<span>${M[m].s.charAt(0).toUpperCase()+M[m].s.slice(1)}</span></button>`).join('')}</div></div>`}
+ hero=`<section class="hero buti"><div><h2><span class="dot${st.total?' late':''}"></span>${st.total?`${st.total} ${st.total===1?'order needs':'orders need'} attention`:'Everything is taken care of'}</h2><p>${st.total?(st.express?`Start with the ${st.express} express ${st.express===1?'order':'orders'}.`:'Open a list below to update it.'):'No open issues in any list.'}</p></div>${rail(2)}</section>`,
+ sheets=`<div class="sheets">${S2K.map(m=>{const t=D[m].length,o=st[m],pct=t?Math.round((t-o)/t*100):100;return `<button class="sheet" data-act="sheet" data-m="${m}" data-f="${o?'open':'all'}"><span class="ki">${ic(M[m].icon,19)}</span><b>${M[m].t}</b><span class="kv">${o}</span><small>open of ${t}</small><span class="prog" aria-label="${pct}% done"><u style="width:${pct}%"></u></span></button>`}).join('')}</div>`;
+ return head()+hero+sheets+`<div class="sec"><h2>Quick add</h2><div class="row">${S2K.map(m=>`<button class="btn" data-act="add" data-m="${m}">${ic(M[m].icon,16)}<span>${M[m].s.charAt(0).toUpperCase()+M[m].s.slice(1)}</span></button>`).join('')}</div></div>`}
 
 /* ---------- lists ---------- */
 const cnt=()=>`${shown} ${shown===1?'record':'records'}`;
 function emptyBox(t,d,m){return `<div class="empty"><div class="eico">${ic('inbox',26)}</div><b>${t}</b><p>${d}</p>${m?`<button class="btn btn-pri" data-act="add" data-m="${m}">${ic('plus',16)}<span>Add ${M[m].s}</span></button>`:''}</div>`}
 function searchRows(m){const q=(Q[m]||'').trim().toLowerCase(),d=DB[M[m].site][m];if(!q)return d.slice();
+ if(m==='intl')return d.filter(r=>[r.name,r.country,r.notes,r.by,...(r.items||[]).map(it=>[it.order,it.process,it.due,it.notes].join(' '))].join(' ').toLowerCase().includes(q));
  if(m==='asg')return d.filter(r=>(r.cust+' '+r.date+' '+(r.notes||'')+' '+(r.by||'')+' '+(r.items||[]).map(it=>[it.name,it.stitch,it.size,it.notes].join(' ')).join(' ')).toLowerCase().includes(q));
  return d.filter(r=>[...M[m].f.map(f=>r[f.k]),r.by].join(' ').toLowerCase().includes(q))}
 function chips(m){const c=M[m];if(!c.st)return '';const rows=searchRows(m),o=rows.filter(r=>!isDone(m,r)).length,f=F[m]||'all';
@@ -653,6 +744,7 @@ function tbl(m){let rows=searchRows(m);const c=M[m],f=F[m]||'all';
  const all=DB[c.site][m].length;
  if(!rows.length)return all?`<div class="empty"><div class="eico">${ic('search',26)}</div><b>No matches</b><p>Try a different word or filter.</p></div>`:emptyBox(c.empty[0],c.empty[1],m);
  if(m==='asg')return asgTbl(rows);
+ if(m==='intl')return intlTbl(rows);
  const td=(fd0,r)=>{const{k,l,t}=fd0,a=`data-label="${l}"${k===c.prim?' data-p':''}`,v=r[k];
   if(k==='notes')return `<td class="note" ${a}>${v?`<span class="nt">${esc(v)}</span>`:''}</td>`;
   if(m==='reg'&&k==='status')return `<td ${a}>${v==='Packed'?'<span class="b ok">Packed</span>':'<span class="b mu">Unpacked</span>'}</td>`;
@@ -676,7 +768,7 @@ function fieldHTML(f,r){const{k,l,t}=f,v=r[k]??'',lab=`<label for="f_${k}">${k==
  else inner=`<input id="f_${k}" type="${t}" value="${esc(v)}"${t==='number'?' min="0" inputmode="numeric"':''}${f.dl?` list="${f.dl}"`:''}${f.req?' aria-required="true"':''} autocomplete="off">`;
  return `<div class="fld${full}">${lab}${inner}${er}</div>`}
 function defaults(c){const r={};c.f.forEach(f=>{if(f.def!=null)r[f.k]=f.def;else if(f.t==='date'&&f.k==='date')r[f.k]=today();else if(f.t==='select')r[f.k]=f.o[0]});return r}
-function openEdit(m,id){if(m==='asg')return asgEdit(id);
+function openEdit(m,id){if(m==='asg')return asgEdit(id);if(m==='intl')return intlEdit(id);
  const c=M[m],r=id?DB[c.site][m].find(x=>x.id===id):null;
  if(id&&!r){toast('That record was removed by someone else.','er');rerender();return}
  const v=r||defaults(c);
@@ -716,10 +808,11 @@ function showImg(id){const r=DB[1].stock.find(x=>x.id===id);if(!r)return;if(!r.i
 const asgTotal=items=>items.reduce((t,it)=>t+(+it.qty||0)*pr(it.name),0);
 function asgTbl(rows){return `<table class="rt"><thead><tr><th>Date</th><th>Customer</th><th>Items</th><th>Qty</th><th>Amount (Rs.)</th><th>Notes</th><th><span class="sr">Edit</span></th></tr></thead><tbody>${rows.map(r=>{const items=r.items||[],qty=items.reduce((t,it)=>t+(+it.qty||0),0),summary=items.map(it=>`${esc(it.name)}${it.size?' ('+esc(it.size)+')':''} ×${esc(it.qty)}`).join(', '),note=[r.notes,...items.map(i=>i.notes)].filter(Boolean).join('. ');
  return `<tr data-act="edit" data-m="asg" data-id="${r.id}"><td data-label="Date">${fd(r.date)}</td><td data-label="Customer" data-p>${esc(r.cust)}</td><td data-label="Items" class="wrap">${summary}</td><td data-label="Qty">${qty}</td><td data-label="Amount (Rs.)"><b>${inr(asgTotal(items))}</b></td><td class="note" data-label="Notes">${note?`<span class="nt">${esc(note)}</span>`:''}</td><td class="act"><button class="ib" data-act="edit" data-m="asg" data-id="${r.id}" aria-label="Edit">${ic('pencil',16)}</button></td></tr>`}).join('')}</tbody></table>`}
-const blankItem=()=>({name:'',stitch:'',size:'',qty:1,notes:''});
+let itemMode='asg';
+const blankItem=()=>itemMode==='intl'?{order:'',process:'Pending',due:'',notes:''}:{name:'',stitch:'',size:'',qty:1,notes:''};
 function asgEdit(id){const r=id?DB[1].asg.find(x=>x.id===id):{date:today(),cust:'',notes:''};
  if(id&&!r){toast('That assignment was removed by someone else.','er');rerender();return}
- draftItems=id?(r.items||[]).map(x=>({...x})):[blankItem()];if(!draftItems.length)draftItems=[blankItem()];
+ itemMode='asg';draftItems=id?(r.items||[]).map(x=>({...x})):[blankItem()];if(!draftItems.length)draftItems=[blankItem()];
  dlg(`<form id="frm" novalidate>${dlgHead((id?'Edit ':'Add ')+'assignment')}<div class="db"><div class="fg"><div class="fld"><label for="f_date">Date</label><input id="f_date" type="date" value="${esc(r.date||today())}"></div><div class="fld"><label for="f_cust">Customer name<span class="req" aria-hidden="true">*</span></label><input id="f_cust" value="${esc(r.cust||'')}" autocomplete="off" aria-required="true"><span class="ferr" id="e_cust"></span></div></div>
 <h4 class="sub">Items</h4><div id="items">${itemsHTML()}</div><span class="ferr" id="e_items"></span>
 <button type="button" class="btn" data-act="additem">${ic('plus',16)}<span>Add another item</span></button>
@@ -728,7 +821,8 @@ function asgEdit(id){const r=id?DB[1].asg.find(x=>x.id===id):{date:today(),cust:
 ${r.by?`<p class="meta">Last saved by ${esc(r.by)} on ${fd(r.at)}</p>`:''}</div>
 <div class="df">${id?`<button type="button" class="btn btn-ghost btn-dng sp" data-act="del" data-m="asg" data-id="${id}">Delete</button>`:''}<button type="button" class="btn" data-act="close">Cancel</button><button type="submit" class="btn btn-pri" id="svb">${id?'Save changes':'Add assignment'}</button></div></form>`);
  $('#frm').onsubmit=e=>{e.preventDefault();asgSave(id)}}
-function itemsHTML(){return draftItems.map((it,i)=>`<div class="itemcard"><div class="ih"><b>Item ${i+1}</b>${draftItems.length>1?`<button type="button" class="btn btn-ghost btn-dng sm" data-act="rmitem" data-i="${i}">Remove</button>`:''}</div><div class="fg">
+function itemsHTML(){return itemMode==='intl'?intlItemsHTML():asgItemsHTML()}
+function asgItemsHTML(){return draftItems.map((it,i)=>`<div class="itemcard"><div class="ih"><b>Item ${i+1}</b>${draftItems.length>1?`<button type="button" class="btn btn-ghost btn-dng sm" data-act="rmitem" data-i="${i}">Remove</button>`:''}</div><div class="fg">
 <div class="fld"><label for="i${i}n">Design<span class="req" aria-hidden="true">*</span></label><input id="i${i}n" value="${esc(it.name)}" list="stocks" data-i="${i}" data-k="name" autocomplete="off"></div>
 <div class="fld"><label for="i${i}s">Stitch type</label><input id="i${i}s" value="${esc(it.stitch)}" list="stitch" data-i="${i}" data-k="stitch" autocomplete="off"></div>
 <div class="fld"><label for="i${i}z">Size</label><input id="i${i}z" value="${esc(it.size)}" list="sizes" data-i="${i}" data-k="size" autocomplete="off"></div>
@@ -746,15 +840,49 @@ async function asgSave(id){const date=$('#f_date').value||today(),cust=$('#f_cus
  const ok=await mut(1,D=>{const r=id&&D.asg.find(x=>x.id===id);if(r)Object.assign(r,v);else D.asg.push({id:uid(),...v})},id?'Changes saved':'Added');
  if(ok){$('#dlg').close();rerender()}else busy(btn,false)}
 
+/* ---------- international orders: one customer, several designs ---------- */
+const IST=['Pending','Stitching','Ready','Dispatched','Delivered'];
+function intlTbl(rows){return `<table class="rt"><thead><tr><th>Customer</th><th>Country</th><th>Designs</th><th>Status</th><th>Expected on</th><th>Notes</th><th><span class="sr">Edit</span></th></tr></thead><tbody>${rows.map(r=>{const items=r.items||[],
+ cnt={};items.forEach(it=>{const s=it.process||'Pending';cnt[s]=(cnt[s]||0)+1}),
+ status=IST.concat(Object.keys(cnt).filter(k=>!IST.includes(k))).filter(s=>cnt[s]).map(s=>`<span class="b ${TONE[s]||'mu'}">${cnt[s]} ${esc(s)}</span>`).join(' '),
+ due=[...new Set(items.map(it=>it.due).filter(Boolean))].map(esc).join(', '),
+ note=[r.notes,...items.map(i=>i.notes)].filter(Boolean).join('. ');
+ return `<tr data-act="edit" data-m="intl" data-id="${r.id}"><td data-label="Customer" data-p>${esc(r.name)}</td><td data-label="Country">${esc(r.country)}</td><td data-label="Designs (${items.length})" class="wrap">${items.map(it=>esc(it.order)).join(', ')}</td><td data-label="Status" class="wrap"><span class="bwrap">${status}</span></td><td data-label="Expected on">${due}</td><td class="note" data-label="Notes">${note?`<span class="nt">${esc(note)}</span>`:''}</td><td class="act"><button class="ib" data-act="edit" data-m="intl" data-id="${r.id}" aria-label="Edit">${ic('pencil',16)}</button></td></tr>`}).join('')}</tbody></table>`}
+function intlItemsHTML(){return draftItems.map((it,i)=>`<div class="itemcard"><div class="ih"><b>Design ${i+1}</b>${draftItems.length>1?`<button type="button" class="btn btn-ghost btn-dng sm" data-act="rmitem" data-i="${i}">Remove</button>`:''}</div><div class="fg">
+<div class="fld"><label for="i${i}n">Design<span class="req" aria-hidden="true">*</span></label><input id="i${i}n" value="${esc(it.order)}" list="stocks" data-i="${i}" data-k="order" autocomplete="off"></div>
+<div class="fld"><label for="i${i}p">Status</label><select id="i${i}p" data-i="${i}" data-k="process">${(IST.includes(it.process)?IST:[...IST,it.process]).map(s=>`<option${s===it.process?' selected':''}>${esc(s)}</option>`).join('')}</select></div>
+<div class="fld"><label for="i${i}d">Expected on</label><input id="i${i}d" value="${esc(it.due)}" data-i="${i}" data-k="due" placeholder="e.g. Wednesday" autocomplete="off"></div>
+<div class="fld"><label for="i${i}o">${ic('note',15)}Design notes</label><input id="i${i}o" value="${esc(it.notes)}" data-i="${i}" data-k="notes" autocomplete="off"></div></div></div>`).join('')}
+function intlEdit(id){const r=id?DB[2].intl.find(x=>x.id===id):{name:'',country:'',notes:''};
+ if(id&&!r){toast('That order was removed by someone else.','er');rerender();return}
+ itemMode='intl';draftItems=id?(r.items||[]).map(x=>({...x})):[blankItem()];if(!draftItems.length)draftItems=[blankItem()];
+ dlg(`<form id="frm" novalidate>${dlgHead((id?'Edit ':'Add ')+'international order')}<div class="db"><div class="fg"><div class="fld"><label for="f_name">Customer<span class="req" aria-hidden="true">*</span></label><input id="f_name" value="${esc(r.name||'')}" autocomplete="off" aria-required="true"><span class="ferr" id="e_name"></span></div><div class="fld"><label for="f_country">Country</label><input id="f_country" value="${esc(r.country||'')}" autocomplete="off" placeholder="e.g. Nepal, UAE"></div></div>
+<h4 class="sub">Designs</h4><div id="items">${itemsHTML()}</div><span class="ferr" id="e_items"></span>
+<button type="button" class="btn" data-act="additem">${ic('plus',16)}<span>Add another design</span></button>
+<div class="fld" style="margin-top:16px"><label for="f_notes">${ic('note',15)}Notes</label><textarea id="f_notes" rows="3" placeholder="Address, shipping, payment, anything to remember">${esc(r.notes||'')}</textarea></div>
+${r.by?`<p class="meta">Last saved by ${esc(r.by)} on ${fd(r.at)}</p>`:''}</div>
+<div class="df">${id?`<button type="button" class="btn btn-ghost btn-dng sp" data-act="del" data-m="intl" data-id="${id}">Delete</button>`:''}<button type="button" class="btn" data-act="close">Cancel</button><button type="submit" class="btn btn-pri" id="svb">${id?'Save changes':'Add international order'}</button></div></form>`);
+ $('#frm').onsubmit=e=>{e.preventDefault();intlSave(id)}}
+async function intlSave(id){const name=$('#f_name').value.trim(),country=$('#f_country').value.trim(),notes=$('#f_notes').value.trim(),btn=$('#svb');
+ setErr('name','');$('#e_items').textContent='';
+ if(!name){setErr('name','Please enter the customer name.');$('#f_name').focus();return}
+ const items=draftItems.map(it=>({order:String(it.order||'').trim(),process:it.process||'Pending',due:String(it.due||'').trim(),notes:String(it.notes||'').trim()})).filter(it=>it.order);
+ if(!items.length){$('#e_items').textContent='Add at least one design.';const f=$('#i0n');if(f)f.focus();return}
+ busy(btn,true,'Saving…');
+ const v={name,country,notes,items,by:me.name,at:today()};
+ const ok=await mut(2,D=>{const r=id&&D.intl.find(x=>x.id===id);if(r)Object.assign(r,v);else D.intl.push({id:uid(),...v})},id?'Changes saved':'Added');
+ if(ok){$('#dlg').close();rerender()}else busy(btn,false)}
+
 /* ---------- settings, export, backup ---------- */
-function sett(){return `<div class="ph"><div><h1>Settings</h1><p>Your account and your data. These settings cover both websites.</p></div></div><div class="set">
+function sett(){return `<div class="ph"><div><h1>Settings</h1><p>Your account and your data. These settings cover Stock Studio and Order Care.</p></div></div><div class="set">
 <section class="card pad"><h3>Account</h3><p class="cs">Signed in as <b>${esc(me.name)}</b> (${me.role}).</p></section>
 <section class="card pad"><h3>Change my password</h3><p class="cs">Use at least 6 characters.</p><form id="pwf" novalidate><div class="fld"><label for="np">New password</label><div class="pwrap"><input id="np" type="password" autocomplete="new-password"><button type="button" data-act="peek" aria-label="Show password">${ic('eye',18)}</button></div><span class="ferr" id="e_np"></span></div><div style="margin-top:14px"><button class="btn btn-pri" id="pwb" type="submit">Update password</button></div></form></section>
-<section class="card pad"><h3>How it works</h3><p class="cs" style="margin-bottom:0">Website 1, Stock Studio, holds your designs, stock register, assignments and deliveries. Website 2, Order Care, holds the five lists from your Excel file: courier issues, stitching delays, exchanges, international and express orders. Every list has a Notes field. Use the 1 and 2 switch in the menu to jump between them.</p></section>
+<section class="card pad"><h3>How it works</h3><p class="cs" style="margin-bottom:0">Stock Studio holds your designs, stock register, assignments and deliveries. Order Care holds the five lists from your Excel file: courier issues, stitching delays, exchanges, international and express orders. Every list has a Notes field. Use the switch at the top of the menu to jump between them.</p></section>
 ${me.role==='admin'?`<section class="card pad"><h3>Backup and restore</h3><p class="cs">Your data is saved online. Download a copy now and then to be safe. One backup file holds both websites.</p><div class="row"><button class="btn" data-act="backup">${ic('download',16)}<span>Download backup</span></button><button class="btn" data-act="restore">${ic('upload',16)}<span>Restore from backup</span></button><input id="rf" type="file" accept=".json,application/json" hidden></div></section>`:''}</div>`}
 function dlFile(name,data,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:type||'text/plain'}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
 function csv(m){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',c=M[m];let rows;
- if(m==='asg'){rows=[['Date','Customer Name','Stock Name','Stitch Type','Size','Qty','Item Notes','Amount (Rs.)','Notes']];DB[1].asg.forEach(r=>(r.items||[]).forEach(it=>rows.push([r.date,r.cust,it.name,it.stitch,it.size,it.qty,it.notes,(+it.qty||0)*pr(it.name),r.notes])))}
+ if(m==='intl'){rows=[['Customer','Country','Design','Status','Expected on','Design notes','Notes']];DB[2].intl.forEach(r=>(r.items||[]).forEach(it=>rows.push([r.name,r.country,it.order,it.process,it.due,it.notes,r.notes])))}
+ else if(m==='asg'){rows=[['Date','Customer Name','Stock Name','Stitch Type','Size','Qty','Item Notes','Amount (Rs.)','Notes']];DB[1].asg.forEach(r=>(r.items||[]).forEach(it=>rows.push([r.date,r.cust,it.name,it.stitch,it.size,it.qty,it.notes,(+it.qty||0)*pr(it.name),r.notes])))}
  else{const fs=c.f.filter(f=>f.t!=='image');rows=[fs.map(f=>f.l),...DB[c.site][m].map(r=>fs.map(f=>r[f.k]))]}
  if(rows.length<2){toast('Nothing to export yet.','er');return}
  dlFile(c.t.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+today()+'.csv','\ufeff'+rows.map(r=>r.map(q).join(',')).join('\r\n'),'text/csv');toast('CSV downloaded')}
@@ -779,6 +907,7 @@ sheet:b=>{F[b.dataset.m]=b.dataset.f;go(M[b.dataset.m].site,b.dataset.m)},
 add:b=>openEdit(b.dataset.m),edit:b=>openEdit(b.dataset.m,b.dataset.id),del:b=>delRec(b),
 photo:b=>showImg(b.dataset.id),close:()=>$('#dlg').close(),
 chip:b=>{F[b.dataset.m]=b.dataset.f;refresh(b.dataset.m)},
+tab:b=>{dashTab=b.dataset.t;draw()},
 csv:b=>csv(b.dataset.m),theme:()=>theme(),logout:()=>logout(),
 menu:()=>toggleNav(true),scrim:()=>toggleNav(false),
 rmimg:()=>{$('#imgwrap').dataset.rm='1';const p=$('#imgprev');if(p)p.remove()},
