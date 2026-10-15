@@ -440,6 +440,39 @@ dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:24px 24px 0 0;max
 @media(max-width:720px){.seg{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:480px){.dt .dr{flex-direction:column;gap:4px}.dt .dn{-webkit-line-clamp:3}.seg{grid-template-columns:repeat(2,1fr)}.seg button{min-height:50px;flex-direction:row;gap:6px}}
 
+
+/* data care */
+.set{max-width:820px}
+.sh{font-size:28px;margin:12px 0 2px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sh .b{font-family:var(--sans)}
+.dstats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.dstats .kv{font-size:28px}
+.notice{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:16px;background:var(--wnb);color:var(--wn);font-weight:700;font-size:14px;width:100%;text-align:left}
+.nbtn{margin-top:16px}
+.nbtn span{flex:1}
+.cats{display:grid;gap:8px;margin-top:16px}
+.cat{display:flex;align-items:flex-start;gap:12px;padding:14px;border:1.5px solid var(--ln);border-radius:16px;cursor:pointer;transition:border-color .15s,background .15s}
+.cat:has(input:checked){border-color:var(--br);background:var(--br50)}
+.cat.none{opacity:.55;cursor:default}
+input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 0;flex:none;accent-color:var(--br);box-shadow:none}
+.cat .ci{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--sf2);color:var(--br);flex:none}
+.cat .cb{flex:1;min-width:0;display:grid;gap:2px}
+.cat .cb b{font-weight:800}
+.cat .cb small{color:var(--ink3);font-size:13px;line-height:1.4}
+.cat .cb .cn{color:var(--ink2)}
+.cat .cc{font:700 24px/1 var(--serif);text-align:right;flex:none;min-width:40px}
+.cat .cc small{display:block;font:700 11.5px/1.3 var(--sans);color:var(--ink3);margin-top:3px}
+.btn-dngfill{background:var(--er);border-color:var(--er);color:#fff;margin-top:14px}
+.btn-dngfill:hover{background:var(--er);border-color:var(--er);color:#fff;filter:brightness(.92)}
+.restore-opt{display:grid;gap:4px;justify-items:start;padding:14px;border:1.5px solid var(--ln);border-radius:16px;margin-top:12px}
+.restore-opt small{color:var(--ink3);font-size:13px}
+.restore-opt .btn{margin-top:8px}
+.how summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between}
+.how summary::-webkit-details-marker{display:none}
+.how summary::after{content:"+";font:700 24px/1 var(--sans);color:var(--br)}
+.how[open] summary::after{content:"−"}
+.how p{margin-top:12px;color:var(--ink2);font-size:14.5px}
+@media(max-width:720px){.dstats{grid-template-columns:repeat(2,minmax(0,1fr))}.cat{padding:12px;gap:10px}.cat .ci{display:none}.btn-dngfill{width:100%}}
 /* ---------- extra polish for every screen size ---------- */
 @media(max-width:1200px){.sheets{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(min-width:721px) and (max-width:1100px){
@@ -619,7 +652,7 @@ intl:r([['Raagah','',[['Gul-E-Aasman','Stitching'],['Monochrome Muse','Ready'],[
 express:r([['1151','Jayanthi Jayaraman','Mehroom Mocha / Earthy Cotton Set','XL','24 Sept','Wednesday'],['1168','Amal S Anniyan','Indigo Bloom','L','1 Oct','Wednesday'],['1190','Nellikkayil','Sunheri Dori','M','','Saturday'],['1191','Sudha','Monochrome Mehfil','L','','Saturday'],['1148','Pragya Singh','Mehroom Mocha','M','Before 28th','Wednesday']].map(([order,name,product,size,promised,dispatch])=>({order,name,product,size,promised,dispatch,status:'Pending'})))}}
 
 /* make sure loaded data always has the right shape, so nothing breaks */
-function norm1(o,flag){o=o&&typeof o==='object'?o:{};if(!Array.isArray(o.oos))o.oos=[];['stock','reg','asg','del','oos'].forEach(k=>{if(!Array.isArray(o[k])){o[k]=[];flag&&(flag.v=1)}});
+function norm1(o,flag){o=o&&typeof o==='object'?o:{};if(!o.meta||typeof o.meta!=='object')o.meta={};if(!Array.isArray(o.oos))o.oos=[];['stock','reg','asg','del','oos'].forEach(k=>{if(!Array.isArray(o[k])){o[k]=[];flag&&(flag.v=1)}});
  o.asg=o.asg.map(r=>{if(Array.isArray(r.items))return r;flag&&(flag.v=1);return{id:r.id,date:r.date,cust:r.cust,notes:'',items:[{name:r.name||'',stitch:r.stitch||'',size:r.size||'',qty:r.qty||1,notes:r.notes||''}],by:r.by,at:r.at}});
  ['stock','reg','asg','del','oos'].forEach(k=>o[k].forEach(r=>{if(!r.id){r.id=uid();flag&&(flag.v=1)}}));return o}
 function norm2(o,flag){o=o&&typeof o==='object'?o:{};S2K.forEach(k=>{if(!Array.isArray(o[k]))o[k]=[];o[k].forEach(r=>{if(!r.id)r.id=uid()})});
@@ -674,7 +707,7 @@ async function doAuth(){const b=$('#go'),e=$('#er'),em=$('#u').value.trim(),pw=$
  catch(x){busy(b,false);e.textContent='Could not reach the sign-in service. Check your internet and try again.'}}
 async function start(u){try{const r=await sb.auth.getUser();if(r.data&&r.data.user)u=r.data.user}catch(e){}me=mk(u);$('#app').innerHTML='<div class="load"><div><div class="spin"></div>Loading your data…</div></div>';
  try{const[a,b]=await Promise.all([load(KEY[1]),load(KEY[2])]);
-  if(!a){DB[1]=seed1();try{await store(KEY[1],DB[1])}catch(e){}}else{const f={v:0};DB[1]=norm1(a,f);if(f.v){try{await store(KEY[1],DB[1])}catch(e){}}}
+  if(!a){DB[1]=norm1(seed1());try{await store(KEY[1],DB[1])}catch(e){}}else{const f={v:0};DB[1]=norm1(a,f);if(f.v){try{await store(KEY[1],DB[1])}catch(e){}}}
   if(!b){DB[2]=seed2();try{await store(KEY[2],DB[2])}catch(e){}}else{const f2={v:0};DB[2]=norm2(b,f2);if(f2.v){try{await store(KEY[2],DB[2])}catch(e){}}}}
  catch(e){$('#app').innerHTML=`<div class="load"><div class="msg"><div class="eico">${ic('wifi',26)}</div><h2>Cannot reach the database</h2><p>Nothing was changed. Check your internet connection, then try again.</p><div class="row"><button class="btn btn-pri" onclick="location.reload()">Try again</button><button class="btn" data-act="logout">Log out</button></div></div></div>`;return}
  route()}
@@ -698,7 +731,7 @@ function stats2(){const o={};let total=0;S2K.forEach(m=>{o[m]=DB[2][m].filter(r=
 function home(){document.body.className='';const a=stats1(),b=stats2(),
  tile=(n,st)=>`<button class="tile s${n}" data-act="go" data-s="${n}" data-v="dash"><div class="tpanel buti">${rail(n)}<span class="tico">${ic(SITES[n].icon,24)}</span></div><div class="tbody"><h2>${SITES[n].name}</h2><p>${SITES[n].desc}</p><div class="tstats">${st.map(([v,l,late])=>`<div class="${late?'late':''}"><b>${v}</b><small>${l}</small></div>`).join('')}</div><span class="tgo">Open ${SITES[n].name}${ic('right',18)}</span></div></button>`;
  $('#app').innerHTML=`<div class="home"><header class="htop">${mark()}<b>Rifah's Kaleidoscope</b><span class="sp"></span>${themeBtn('btn sm')}<button class="btn sm" data-act="logout">${ic('logout',16)}<span>Log out</span></button></header>${offBanner()}
-<main class="hwrap"><h1>Hello, ${esc(firstName())}</h1><p>Choose where you want to work. You can switch between them any time.</p>
+<main class="hwrap"><h1>Hello, ${esc(firstName())}</h1><p>Choose where you want to work. You can switch between them any time.</p>${isAdmin()&&cleanupDue()?`<button class="notice nbtn" data-act="go" data-s="1" data-v="set">${ic('clock',18)}<span>Monthly data clean-up and backup is due. Tap to open Settings.</span>${ic('right',16)}</button>`:''}
 <div class="tiles">${tile(1,[[a.hold,'pieces in holding'],[a.open,'parcels on the way'],[a.over,'overdue',a.over>0]])}${tile(2,[[b.total,'need attention',b.total>0],[b.courier,'courier issues'],[b.express,'express to send']])}</div></main></div>`}
 
 /* ---------- app frame ---------- */
@@ -920,11 +953,6 @@ async function intlSave(id){const name=$('#f_name').value.trim(),country=$('#f_c
  if(ok){$('#dlg').close();rerender()}else busy(btn,false)}
 
 /* ---------- settings, export, backup ---------- */
-function sett(){return `<div class="ph"><div><h1>Settings</h1><p>Your account and your data. These settings cover Stock Studio and Order Care.</p></div></div><div class="set">
-<section class="card pad"><h3>Account</h3><p class="cs">Signed in as <b>${esc(me.name)}</b> (${me.role}).${me.role==='admin'?'':' Backup and restore are available to the admin only.'}</p></section>
-<section class="card pad"><h3>Change my password</h3><p class="cs">Use at least 6 characters.</p><form id="pwf" novalidate><div class="fld"><label for="np">New password</label><div class="pwrap"><input id="np" type="password" autocomplete="new-password"><button type="button" data-act="peek" aria-label="Show password">${ic('eye',18)}</button></div><span class="ferr" id="e_np"></span></div><div style="margin-top:14px"><button class="btn btn-pri" id="pwb" type="submit">Update password</button></div></form></section>
-<section class="card pad"><h3>How it works</h3><p class="cs" style="margin-bottom:0">Stock Studio holds your designs, stock register, assignments and deliveries. Order Care holds the five lists from your Excel file: courier issues, stitching delays, exchanges, international and express orders. Every list has a Notes field. Use the switch at the top of the menu to jump between them.</p></section>
-${me.role==='admin'?`<section class="card pad"><h3>Backup and restore</h3><p class="cs">Your data is saved online. Download a copy now and then to be safe. One backup file holds both websites.</p><div class="row"><button class="btn" data-act="backup">${ic('download',16)}<span>Download backup</span></button><button class="btn" data-act="restore">${ic('upload',16)}<span>Restore from backup</span></button><input id="rf" type="file" accept=".json,application/json" hidden></div></section>`:''}</div>`}
 function dlFile(name,data,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:type||'text/plain'}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
 function csv(m){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',c=M[m];let rows;
  if(m==='intl'){rows=[['Customer','Country','Design','Status','Expected on','Design notes','Notes']];DB[2].intl.forEach(r=>(r.items||[]).forEach(it=>rows.push([r.name,r.country,it.order,it.process,it.due,it.notes,r.notes])))}
@@ -932,16 +960,143 @@ function csv(m){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',c=M[m];let r
  else{const fs=c.f.filter(f=>f.t!=='image');rows=[fs.map(f=>f.l),...DB[c.site][m].map(r=>fs.map(f=>r[f.k]))]}
  if(rows.length<2){toast('Nothing to export yet.','er');return}
  dlFile(c.t.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+today()+'.csv','\ufeff'+rows.map(r=>r.map(q).join(',')).join('\r\n'),'text/csv');toast('CSV downloaded')}
-function backup(){if(me.role!=='admin'){toast('Only the admin can download a backup.','er');return}dlFile('rifahs-backup-'+today()+'.json',JSON.stringify({version:2,data:DB[1],care:DB[2]},null,1),'application/json');toast('Backup downloaded')}
-function restore(i){if(me.role!=='admin'){toast('Only the admin can restore a backup.','er');i.value='';return}const f=i.files[0];if(!f)return;const rd=new FileReader();
- rd.onload=async()=>{let a,b;try{const o=JSON.parse(rd.result);
-   if(o&&o.data&&o.care){a=o.data;b=o.care}else if(o&&['stock','reg','asg','del'].every(k=>Array.isArray(o[k])))a=o;else throw 0;
-   if(!['stock','reg','asg','del'].every(k=>Array.isArray(a[k])))throw 0}
-  catch(e){toast('That file is not a valid backup.','er');i.value='';return}
-  const ok1=await mut(1,()=>{DB[1]=norm1(a)},'Backup restored');
-  if(ok1&&b){DB[2]=norm2(b);try{await store(KEY[2],DB[2])}catch(e){toast('Stock Studio restored, Order Care could not save. Try again.','er')}}
-  i.value='';rerender()};
+/* =====================================================================
+   DATA CARE (admin only): overview, backup, monthly clean-up, restore
+   ===================================================================== */
+const isAdmin=()=>!!me&&me.role==='admin';
+let cleanMonths=3,cleanOff=new Set(['asg']),pendingRestore=null;
+function cutoffISO(mo){const d=new Date();d.setMonth(d.getMonth()-mo);return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)}
+const older=(d,c)=>isISO(d)&&d<c;
+const daysAgo=d=>isISO(d)?daysSince(d):null;
+function holdingBy(){const by={};DB[1].reg.forEach(r=>{const k=r.name||'Unnamed';by[k]=(by[k]||0)+(+r.in||0)-(+r.out||0)});return by}
+
+/* Stock register: entries older than the cut-off are combined into ONE balance row per
+   design + stitch type + size + packing. Holding stays exactly the same.
+   Rows that moved to/from the stitching unit are never combined. */
+function compactPlan(c){
+ const old=DB[1].reg.filter(r=>older(r.date,c)&&!/stitching unit/i.test((r.from||'')+' '+(r.to||''))),g={};
+ old.forEach(r=>{const k=[r.name,r.stitch,r.size,r.status].map(x=>String(x||'').trim().toLowerCase()).join('|');(g[k]=g[k]||[]).push(r)});
+ const removed=[],added=[];
+ Object.values(g).forEach(rs=>{const net=rs.reduce((t,r)=>t+(+r.in||0)-(+r.out||0),0);
+  if(rs.length===1&&net!==0)return;               // a single row that still holds pieces: leave it alone
+  rs.forEach(r=>removed.push(r));
+  if(net!==0){const ds=rs.map(r=>r.date).sort(),f=rs[0];
+   added.push({id:uid(),date:ds[ds.length-1],name:f.name,stitch:f.stitch||'',size:f.size||'',from:'Opening balance',to:'',dd:'',in:net>0?net:'',out:net<0?-net:'',status:f.status||'',
+    notes:`Combined ${rs.length} entries from ${fd(ds[0])} to ${fd(ds[ds.length-1])}`,src:rs.map(r=>r.id),by:me.name,at:today()})}});
+ return{removed,added}}
+
+/* Everything the clean-up looks at. Nothing here is deleted until the admin confirms. */
+function planCleanup(mo){const c=cutoffISO(mo),A=DB[1],B=DB[2],by=holdingBy(),cats=[];
+ const dl=A.del.filter(r=>['Delivered','Returned'].includes(r.status)&&older(r.on||r.disp||r.date,c));
+ cats.push({k:'del',site:1,icon:'truck',t:'Finished deliveries',d:`Parcels marked Delivered or Returned before ${fd(c)}.`,rows:dl,name:r=>r.cust});
+ const cp=compactPlan(c);
+ cats.push({k:'reg',site:1,icon:'list',t:'Old stock register entries',d:`Entries from before ${fd(c)} are combined into one balance row for each design, stitch type and size. Your holding numbers do not change.`,rows:cp.removed,added:cp.added.length,name:r=>`${r.name}${r.size?' ('+r.size+')':''}`});
+ const os=(A.oos||[]).filter(r=>(by[r.name]||0)>0);
+ cats.push({k:'oos',site:1,icon:'alert',t:'Out-of-stock marks now back in stock',d:'Designs you marked out of stock that now have pieces in the register again.',rows:os,name:r=>r.name});
+ const as=A.asg.filter(r=>older(r.date,c));
+ cats.push({k:'asg',site:1,icon:'users',t:'Old assignments',d:`Customer assignments dated before ${fd(c)}. Off by default, because they hold order history.`,rows:as,name:r=>r.cust});
+ S2K.forEach(m=>{const rs=B[m].filter(r=>isDone(m,r)&&!(isISO(r.at)&&r.at>=c));
+  cats.push({k:m,site:2,icon:M[m].icon,t:'Finished '+M[m].t.toLowerCase(),d:`Marked done and not changed since ${fd(c)}.`,rows:rs,name:r=>r[M[m].prim]||r.name||r.cust})});
+ return{c,cats}}
+
+/* apply the chosen categories to fresh data (called inside mut, so it never uses stale data) */
+function applyCleanup(site,keys,mo,counts){const p=planCleanup(mo);
+ p.cats.filter(x=>x.site===site&&keys.includes(x.k)&&x.rows.length).forEach(x=>{
+  if(x.k==='reg'){const cp=compactPlan(p.c),gone=new Set(cp.removed.map(r=>r.id));DB[1].reg=DB[1].reg.filter(r=>!gone.has(r.id)).concat(cp.added);counts[x.k]=cp.removed.length}
+  else{const gone=new Set(x.rows.map(r=>r.id)),D=DB[site];D[x.k]=D[x.k].filter(r=>!gone.has(r.id));counts[x.k]=gone.size}})}
+
+function backupObj(){return{app:'rifahs-kaleidoscope',version:3,savedAt:new Date().toISOString(),by:me.name,data:DB[1],care:DB[2]}}
+function downloadBackup(tag){dlFile(`rifahs-backup-${tag?tag+'-':''}${today()}.json`,JSON.stringify(backupObj(),null,1),'application/json')}
+async function backup(){if(!isAdmin())return toast('Only the admin can download a backup.','er');
+ downloadBackup('');await mut(1,D=>{D.meta.lastBackup={date:today(),by:me.name}},'Backup downloaded');rerender()}
+
+function sizeKB(){try{return Math.max(1,Math.round((JSON.stringify(DB[1]).length+JSON.stringify(DB[2]).length)/1024))}catch(e){return 0}}
+function recordCount(){return ['stock','reg','asg','del','oos'].reduce((t,k)=>t+(DB[1][k]||[]).length,0)+S2K.reduce((t,k)=>t+DB[2][k].length,0)}
+const cleanupDue=()=>{const l=((DB[1].meta||{}).cleanups||[])[0];return !l||daysAgo(l.date)>=30};
+
+function careHTML(){if(!DB[1].meta)DB[1].meta={};const meta=DB[1].meta,lb=meta.lastBackup,hist=meta.cleanups||[],lc=hist[0],p=planCleanup(cleanMonths),
+ total=p.cats.filter(x=>!cleanOff.has(x.k)).reduce((t,x)=>t+x.rows.length,0),
+ stat=(icon,l,v,h,o={})=>`<div class="kpi${o.late?' late':''}"><span class="ki">${ic(icon,19)}</span><span class="kl">${l}</span><span class="kv">${v}</span><span class="kh">${h}</span></div>`,
+ cat=x=>{const n=x.rows.length,names=[...new Set(x.rows.map(x.name).filter(Boolean))];return `<label class="cat${n?'':' none'}"><input type="checkbox" value="${x.k}"${!cleanOff.has(x.k)&&n?' checked':''}${n?'':' disabled'}><span class="ci">${ic(x.icon,18)}</span><span class="cb"><b>${x.t}</b><small>${x.d}</small>${n?`<small class="cn">${names.slice(0,6).map(esc).join(', ')}${names.length>6?` and ${names.length-6} more`:''}</small>`:''}</span><span class="cc ${['','s1','s2'][x.site]}">${n}${x.k==='reg'&&n?`<small>become ${x.added}</small>`:''}</span></label>`};
+ return `<h2 class="sh">Data care <span class="b vi">Admin only</span></h2>
+<div class="dstats">${stat('list','Records stored',recordCount(),'Across both websites')}${stat('box','Space used',sizeKB()+' KB','Smaller is faster')}${stat('download','Last backup',lb?fd(lb.date):'Never',lb?`by ${esc(lb.by)}`:'Download one now',{late:!lb||daysAgo(lb.date)>30})}${stat('spark','Last clean-up',lc?fd(lc.date):'Never',lc?`${lc.total} records removed`:'Not done yet',{late:cleanupDue()})}</div>
+${cleanupDue()?`<div class="notice">${ic('clock',18)}<span>Your monthly clean-up is due. Review the list below, then tap “Back up and clean up”.</span></div>`:''}
+
+<section class="card pad"><h3>1. Back up</h3><p class="cs">Downloads one file with everything from Stock Studio and Order Care. Keep it in Google Drive or on your computer. Take one at least once a month.</p><button class="btn btn-pri" data-act="backup">${ic('download',16)}<span>Download backup</span></button></section>
+
+<section class="card pad"><h3>2. Clean up old data</h3><p class="cs">Removes finished and old records so the website stays light and fast. A backup downloads automatically before anything is removed.</p>
+<div class="fld"><label>Remove records older than</label><div class="chips">${[[1,'1 month'],[2,'2 months'],[3,'3 months'],[6,'6 months']].map(([m,l])=>`<button class="chip${cleanMonths===m?' on':''}" data-act="cleanmo" data-mo="${m}" aria-pressed="${cleanMonths===m}">${l}</button>`).join('')}</div><span class="hint">Anything newer than ${fd(p.c)} is always kept.</span></div>
+<div class="cats" id="cleancats">${p.cats.map(cat).join('')}</div>
+<div class="totl"><span>Will be removed</span><span id="cleantotal">${total} ${total===1?'record':'records'}</span></div>
+<p class="cs" style="margin-top:12px">Always kept: your design catalogue, stock you still hold, open deliveries, open orders and anything changed recently.</p>
+<button class="btn btn-pri btn-dngfill" data-act="cleanask"${total?'':' disabled'}>${ic('spark',16)}<span>Back up and clean up</span></button></section>
+
+<section class="card pad"><h3>3. Restore</h3><p class="cs">Open a backup file. You can bring back only the records that are missing (safe, keeps today’s work) or replace everything with the backup.</p><button class="btn" data-act="restore">${ic('upload',16)}<span>Choose backup file</span></button><input id="rf" type="file" accept=".json,application/json" hidden></section>
+
+${hist.length?`<section class="card pad"><h3>Clean-up history</h3><p class="cs">The last ${Math.min(6,hist.length)} clean-ups.</p>${hist.slice(0,6).map(x=>lrow(fd(x.date),x.total,`By ${esc(x.by)}, older than ${x.months} ${x.months===1?'month':'months'}`)).join('')}</section>`:''}
+
+<section class="card pad"><details class="how"><summary><h3>How data care works</h3></summary>
+<p><b>What counts as unwanted.</b> Only finished, old records: delivered or returned parcels; old stock register entries, which are combined into balance rows; out-of-stock marks for designs that are back in stock; and finished Order Care records (resolved courier issues, done stitching delays, sent exchanges, dispatched international and express orders) that nobody has changed recently. Old assignments are included only if you tick them.</p>
+<p><b>What is never removed.</b> The design catalogue, any stock you still hold, open deliveries, open or pending orders, and anything newer than the period you choose.</p>
+<p><b>Stock register.</b> Old entries for the same design, stitch type, size and packing become one “Opening balance” row with the same total, so every holding number, Low stock and Holding by design stay exactly the same.</p>
+<p><b>Safety.</b> You see the full list and counts before anything happens. A backup downloads automatically first. Only the admin sees this section or can run it.</p>
+<p><b>Restore.</b> “Add back missing records” returns anything removed without touching today’s work, and skips old register entries already inside a balance row so nothing is counted twice. “Replace everything” makes the website exactly like the backup file.</p>
+<p><b>Monthly routine.</b> Once a month: open Settings, check the list, tap “Back up and clean up”, and keep the downloaded file safe.</p></details></section>`}
+
+function sett(){return `<div class="ph"><div><h1>Settings</h1><p>Your account${isAdmin()?' and your data':''}. These settings cover Stock Studio and Order Care.</p></div></div><div class="set">
+<section class="card pad"><h3>Account</h3><p class="cs" style="margin-bottom:0">Signed in as <b>${esc(me.name)}</b> (${me.role}).${isAdmin()?'':' Backup, clean-up and restore are available to the admin only.'}</p></section>
+<section class="card pad"><h3>Change my password</h3><p class="cs">Use at least 6 characters.</p><form id="pwf" novalidate><div class="fld"><label for="np">New password</label><div class="pwrap"><input id="np" type="password" autocomplete="new-password"><button type="button" data-act="peek" aria-label="Show password">${ic('eye',18)}</button></div><span class="ferr" id="e_np"></span></div><div style="margin-top:14px"><button class="btn btn-pri" id="pwb" type="submit">Update password</button></div></form></section>
+${isAdmin()?careHTML():''}</div>`}
+
+function cleanTotal(){if(!$('#cleancats'))return;const p=planCleanup(cleanMonths),t=p.cats.filter(x=>!cleanOff.has(x.k)).reduce((s,x)=>s+x.rows.length,0);$('#cleantotal').textContent=`${t} ${t===1?'record':'records'}`;const b=$('[data-act=cleanask]');if(b)b.disabled=!t}
+function cleanAsk(){if(!isAdmin())return toast('Only the admin can clean up data.','er');
+ const p=planCleanup(cleanMonths),ch=p.cats.filter(x=>!cleanOff.has(x.k)&&x.rows.length),total=ch.reduce((t,x)=>t+x.rows.length,0);
+ if(!total)return toast('Nothing to clean up right now.');
+ dlg(`${dlgHead('Clean up old data')}<div class="db"><p class="cs" style="margin-top:0">A backup will download first. Then these records will be removed from the database:</p>${ch.map(x=>lrow(x.t,x.rows.length,x.k==='reg'?`Combined into ${x.added} balance ${x.added===1?'row':'rows'}`:''+(x.site===2?'Order Care':'Stock Studio'))).join('')}
+<div class="totl"><span>Total</span><span>${total} records</span></div><p class="cs" style="margin-top:12px">You can bring them back later from the backup file with Restore.</p></div>
+<div class="df"><button type="button" class="btn" data-act="close">Cancel</button><button type="button" class="btn btn-pri btn-dngfill" data-act="cleango" id="cgo">Download backup and remove ${total}</button></div>`)}
+async function cleanGo(b){if(!isAdmin())return toast('Only the admin can clean up data.','er');
+ if(!navigator.onLine)return toast('You are offline. Connect to the internet first.','er');
+ const keys=planCleanup(cleanMonths).cats.filter(x=>!cleanOff.has(x.k)&&x.rows.length).map(x=>x.k);
+ busy(b,true,'Backing up…');downloadBackup('before-cleanup');
+ await new Promise(r=>setTimeout(r,600));b.textContent='Cleaning up…';
+ const counts={},mo=cleanMonths;
+ const ok2=keys.some(k=>S2K.includes(k))?await mut(2,()=>applyCleanup(2,keys,mo,counts),'Order Care cleaned'):true;
+ const ok1=await mut(1,D=>{applyCleanup(1,keys,mo,counts);const total=Object.values(counts).reduce((a,c)=>a+c,0);
+  D.meta.lastBackup={date:today(),by:me.name};D.meta.cleanups=[{date:today(),by:me.name,months:mo,total,counts},...(D.meta.cleanups||[])].slice(0,24)},'Clean-up finished');
+ $('#dlg').close();
+ if(!ok2)toast('Order Care could not be cleaned. Nothing there was removed. Please try again.','er');
+ else if(!ok1)toast('Stock Studio could not be cleaned. Please try again.','er');
+ else{const t=Object.values(counts).reduce((a,c)=>a+c,0);toast(`Done. ${t} old records removed. Keep the backup file safe.`)}
+ rerender()}
+
+/* restore: read the file, show what is inside, then let the admin choose how */
+function parseBackup(txt){const o=JSON.parse(txt);let a,b;
+ if(o&&o.data){a=o.data;b=o.care||null}else if(o&&['stock','reg','asg','del'].every(k=>Array.isArray(o[k])))a=o;else throw 0;
+ if(!['stock','reg','asg','del'].every(k=>Array.isArray(a[k])))throw 0;
+ return{a:norm1(JSON.parse(JSON.stringify(a))),b:b?norm2(JSON.parse(JSON.stringify(b))):null,savedAt:o.savedAt||'',by:o.by||''}}
+function restore(i){if(!isAdmin()){toast('Only the admin can restore a backup.','er');i.value='';return}const f=i.files[0];if(!f)return;const rd=new FileReader();
+ rd.onload=()=>{i.value='';let bk;try{bk=parseBackup(rd.result)}catch(e){toast('That file is not a valid backup.','er');return}
+  pendingRestore=bk;const cnt=(D,ks)=>ks.reduce((t,k)=>t+((D&&D[k])||[]).length,0),missing=missingCount(bk);
+  dlg(`${dlgHead('Restore from backup')}<div class="db"><p class="cs" style="margin-top:0">${bk.savedAt?`Backup saved on ${fd(bk.savedAt.slice(0,10))}${bk.by?' by '+esc(bk.by):''}.`:'Older backup file.'}</p>
+${lrow('Stock Studio records in file',cnt(bk.a,['stock','reg','asg','del','oos']))}${lrow('Order Care records in file',bk.b?cnt(bk.b,S2K):'Not included')}${lrow('Missing from the website now',missing,'These can be added back safely')}
+<div class="restore-opt"><b>Add back missing records</b><small>Recommended. Brings back removed records and keeps everything added or changed since.</small><button class="btn btn-pri" data-act="restmerge"${missing?'':' disabled'}>Add back ${missing}</button></div>
+<div class="restore-opt"><b>Replace everything</b><small>The website becomes exactly like this backup. Work done after the backup date will be lost.</small><button class="btn btn-ghost btn-dng" data-act="restall">Replace everything</button></div></div>
+<div class="df"><button type="button" class="btn" data-act="close">Cancel</button></div>`)};
  rd.onerror=()=>toast('Could not read that file.','er');rd.readAsText(f)}
+function missingIn(cur,bak,list,skipIds){const have=new Set((cur||[]).map(r=>r.id));return (bak||[]).filter(r=>r.id&&!have.has(r.id)&&!(skipIds&&skipIds.has(r.id)))}
+function srcIds(){const s=new Set();DB[1].reg.forEach(r=>(r.src||[]).forEach(id=>s.add(id)));return s}
+function missingCount(bk){const s=srcIds();let n=0;['stock','reg','asg','del','oos'].forEach(k=>n+=missingIn(DB[1][k],bk.a[k],k,k==='reg'?s:null).length);if(bk.b)S2K.forEach(k=>n+=missingIn(DB[2][k],bk.b[k]).length);return n}
+async function restMerge(b){const bk=pendingRestore;if(!bk||!isAdmin())return;busy(b,true,'Adding back…');let n=0;
+ const ok1=await mut(1,D=>{const s=srcIds();['stock','reg','asg','del','oos'].forEach(k=>{const add=missingIn(D[k],bk.a[k],k,k==='reg'?s:null);n+=add.length;D[k]=D[k].concat(add)})},'Records added back');
+ let ok2=true;if(ok1&&bk.b)ok2=await mut(2,D=>{S2K.forEach(k=>{const add=missingIn(D[k],bk.b[k]);n+=add.length;D[k]=D[k].concat(add)})},'Records added back');
+ if(ok1&&ok2){$('#dlg').close();toast(`${n} ${n===1?'record':'records'} added back`);rerender()}else busy(b,false)}
+async function restAll(b){const bk=pendingRestore;if(!bk||!isAdmin())return;
+ if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Tap again to replace everything';return}
+ busy(b,true,'Restoring…');const keepMeta=DB[1].meta;
+ const ok1=await mut(1,()=>{DB[1]=bk.a;DB[1].meta=Object.assign({},bk.a.meta,{cleanups:keepMeta.cleanups||[],lastBackup:keepMeta.lastBackup})},'Backup restored');
+ let ok2=true;if(ok1&&bk.b)ok2=await mut(2,()=>{DB[2]=bk.b},'Backup restored');
+ if(ok1&&ok2){$('#dlg').close();toast('Everything restored from the backup');rerender()}else{busy(b,false);toast('Restore did not finish. Please try again.','er')}}
 async function chpw(){const p=$('#np').value,b=$('#pwb');setErr('np','');
  if(p.length<6){setErr('np','Use at least 6 characters.');$('#np').focus();return}
  busy(b,true,'Updating…');try{const{error}=await sb.auth.updateUser({password:p});if(error)throw error;toast('Password updated');$('#np').value=''}catch(e){toast(e.message||'Could not update the password.','er')}busy(b,false)}
@@ -961,7 +1116,8 @@ menu:()=>toggleNav(true),scrim:()=>toggleNav(false),
 rmimg:()=>{$('#imgwrap').dataset.rm='1';const p=$('#imgprev');if(p)p.remove()},
 additem:()=>{draftItems.push(blankItem());refreshItems();const f=$('#i'+(draftItems.length-1)+'n');if(f)f.focus()},
 rmitem:b=>{draftItems.splice(+b.dataset.i,1);if(!draftItems.length)draftItems.push(blankItem());refreshItems()},
-backup:()=>backup(),restore:()=>$('#rf').click(),
+backup:()=>backup(),restore:()=>{if(!isAdmin())return toast('Only the admin can restore a backup.','er');$('#rf').click()},
+cleanmo:b=>{cleanMonths=+b.dataset.mo;draw()},cleanask:()=>cleanAsk(),cleango:b=>cleanGo(b),restmerge:b=>restMerge(b),restall:b=>restAll(b),
 peek:b=>{const i=b.parentNode.querySelector('input');i.type=i.type==='password'?'text':'password';b.setAttribute('aria-label',i.type==='password'?'Show password':'Hide password')}};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const f=ACT[b.dataset.act];if(f){e.preventDefault();f(b,e)}});
 document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.pn[data-act]')){e.preventDefault();ACT.photo(e.target)}if(e.key==='Escape')toggleNav(false)});
@@ -971,7 +1127,7 @@ document.addEventListener('input',e=>{const t=e.target;
  if(t.dataset.i!=null&&draftItems[+t.dataset.i]){draftItems[+t.dataset.i][t.dataset.k]=t.dataset.k==='qty'?(+t.value||0):t.value;if(t.dataset.k==='name'||t.dataset.k==='qty')updTotal()}
  if(t.getAttribute('aria-invalid')==='true')t.setAttribute('aria-invalid','false')});
 document.addEventListener('submit',e=>{if(e.target.id==='pwf'){e.preventDefault();chpw()}});
-document.addEventListener('change',e=>{if(e.target.id==='rf')restore(e.target)});
+document.addEventListener('change',e=>{if(e.target.id==='rf')restore(e.target);if(e.target.closest&&e.target.closest('#cleancats')){const t=e.target;if(t.checked)cleanOff.delete(t.value);else cleanOff.add(t.value);cleanTotal()}});
 $('#dlg').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.close()}); // tap outside to close
 window.addEventListener('hashchange',route);
 const netChange=()=>{const o=$('#offl');if(o)o.hidden=navigator.onLine;if(navigator.onLine)toast('Back online')};
