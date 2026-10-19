@@ -970,7 +970,7 @@ function csv(m){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',c=M[m];let r
  else{const fs=c.f.filter(f=>f.t!=='image');rows=[fs.map(f=>f.l),...DB[c.site][m].map(r=>fs.map(f=>r[f.k]))]}
  if(rows.length<2){toast('Nothing to export yet.','er');return}
  dlFile(c.t.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+today()+'.csv','\ufeff'+rows.map(r=>r.map(q).join(',')).join('\r\n'),'text/csv');toast('CSV downloaded')}
-/* ---------- WhatsApp: holding report for the team group (admin and staff only) ---------- */
+/* ---------- WhatsApp: holding report for the team group (admin only) ---------- */
 function reportText(){const R=DB[1].reg,U={},S={},SU={};let tU=0,tS=0,tSU=0;
  R.forEach(r=>{const inn=+r.in||0,out=+r.out||0,net=inn-out,name=r.name||'Unnamed',st=String(r.stitch||'').trim(),un=st.toLowerCase()==='unstitched';
   if(net){const extra=!un&&st&&st.toLowerCase()!=='stitched'?' ('+st.replace(/^stitched\s*/i,'').trim()+')':'',k=name+extra,G=un?U:S,o=G[k]=G[k]||{n:0,sz:{}};o.n+=net;const z=String(r.size||'').trim();if(z)o.sz[z]=(o.sz[z]||0)+net;if(un)tU+=net;else tS+=net}
@@ -993,9 +993,9 @@ function reportText(){const R=DB[1].reg,U={},S={},SU={};let tU=0,tS=0,tSU=0;
  ...(oos.length?['',`🚫 *MARKED OUT OF STOCK*`,oos.map(n=>`• ${n}`).join('\n')]:[]),'',
  `🚚 *OVERDUE PARCELS (25+ days)*`,od.length?od.map(r=>`• ${r.cust} – *${daysSince(r.disp)} days*\n   _Sent ${sd(r.disp)}${r.track?', '+r.track:''}${r.status?', '+r.status:''}_`).join('\n'):'✅ _None, all parcels on time_',
  line,`_Sent from Stock Studio_`].join('\n')}
-const canWA=()=>!!me&&['admin','staff'].includes(me.role); // admin and staff send the WhatsApp report (not owner)
+const canWA=()=>!!me&&me.role==='admin'; // only the admin sends the WhatsApp report
 const waCfg=()=>Object.assign({name:'test 1',link:''},(DB[1].meta||{}).wa||{});
-function waOpen(){if(!canWA())return toast('Only admin and staff can send the WhatsApp report.','er');const c=waCfg();
+function waOpen(){if(!canWA())return toast('Only the admin can send the WhatsApp report.','er');const c=waCfg();
  dlg(`${dlgHead('Send report to WhatsApp')}<div class="db"><p class="cs" style="margin-top:0">Unstitched, stitched, stitching unit, low stock and overdue parcels, ready to send. You can edit it first.</p>
 <div class="fld"><label for="wa_txt">Message</label><textarea id="wa_txt" rows="14" class="watxt">${esc(reportText())}</textarea></div>
 <div class="fg" style="margin-top:14px"><div class="fld"><label for="wa_name">Group name</label><input id="wa_name" value="${esc(c.name)}" autocomplete="off"></div>
