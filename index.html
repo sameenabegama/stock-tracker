@@ -473,6 +473,15 @@ input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;margin:2px 0 
 .how[open] summary::after{content:"−"}
 .how p{margin-top:12px;color:var(--ink2);font-size:14.5px}
 @media(max-width:720px){.dstats{grid-template-columns:repeat(2,minmax(0,1fr))}.cat{padding:12px;gap:10px}.cat .ci{display:none}.btn-dngfill{width:100%}}
+
+/* WhatsApp */
+.btn-wa{background:#1fa855;border-color:#1fa855;color:#fff}
+.btn-wa:hover{background:#178a45;border-color:#178a45;color:#fff}
+.watxt{font-size:14.5px;line-height:1.5;min-height:240px}
+
+.copied{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:16px;background:var(--okb);color:var(--ok);font-size:16px}
+.steps{margin:16px 0 8px;padding-left:22px;display:grid;gap:10px;color:var(--ink);font-size:15.5px}
+kbd{font:700 13px/1 var(--sans);padding:4px 8px;border-radius:7px;border:1.5px solid var(--ln2);border-bottom-width:3px;background:var(--sf2);color:var(--ink)}
 /* ---------- extra polish for every screen size ---------- */
 @media(max-width:1200px){.sheets{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(min-width:721px) and (max-width:1100px){
@@ -564,6 +573,7 @@ pencil:'<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
 inbox:'<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
 check:'<polyline points="20 6 9 17 4 12"/>',
 dress:'<path d="M12 2.5v2"/><path d="M8.5 7 12 4.5 15.5 7"/><path d="M9.5 7h5l1 4 3.5 10H5l3.5-10z"/><path d="M8.5 11h7"/>',
+wa:'<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1c-1-.4-1.6-1-2-2l1-1-1-2z" fill="currentColor" stroke="none"/>',
 tag:'<path d="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.42l8.7 8.7a2.43 2.43 0 0 0 3.42 0l6.58-6.58a2.43 2.43 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r="1" fill="currentColor"/>',
 heart:'<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
 alert:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
@@ -755,7 +765,7 @@ function draw(){document.body.className='s'+site;const S=SITES[site],other=site=
 <datalist id="stocks">${opts(stocks)}</datalist><datalist id="stitch">${opts(ST)}</datalist><datalist id="sizes">${opts(sizes)}</datalist>
 <datalist id="problems">${opts(['Not delivered','Not delivering','Returned','Not paying','Damaged parcel','Wrong address'])}</datalist><datalist id="couriers">${opts(['Delhivery','India Post','Blue Dart','DTDC','Shiprocket','Xpressbees'])}</datalist>`}
 
-const head=()=>`<div class="ph"><div><h1>Hello, ${esc(firstName())}</h1><p>${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p></div></div>`;
+const head=(x='')=>`<div class="ph"><div><h1>Hello, ${esc(firstName())}</h1><p>${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p></div>${x}</div>`;
 const kpi=(icon,l,v,h,o={})=>`<${o.go?`button data-act="go" data-s="${site}" data-v="${o.go}"`:'div'} class="kpi${o.late?' late':''}"><span class="ki">${ic(icon,20)}</span><span class="kl">${l}</span><span class="kv">${v}</span><span class="kh">${h}</span></${o.go?'button':'div'}>`;
 const lrow=(l,v,h,act)=>`<${act?`button ${act}`:'div'} class="lr"><div><b>${l}</b>${h?`<small>${h}</small>`:''}</div><span class="lv">${v}</span></${act?'button':'div'}>`;
 
@@ -792,7 +802,7 @@ ${oos.length?`<div class="dgrid">${[...oos].sort((a,b)=>String(a.name).localeCom
 ${top.length?`<div class="dgrid" id="dgrid">${top.map(([l,v],i)=>`<button class="dt${i<3?' top':''}" data-act="holdgo" data-n="${esc(l)}" data-s="${esc(l.toLowerCase())}"${!holdAll&&i>=LIM?' hidden data-more="1"':''}><span class="dr"><span class="dn">${esc(l)}</span><b>${v}</b></span><i><u style="width:${Math.max(4,v/mx*100)}%"></u></i></button>`).join('')}</div>
 <p class="cs" id="hnone" hidden style="margin-top:12px">No design matches that name.</p>
 ${top.length>LIM?`<div class="hmore"><button class="btn sm" data-act="holdall" id="hmorebtn">${holdAll?'Show top 12 only':`Show all ${top.length} designs`}</button></div>`:''}`:emptyBox('Nothing in holding','Add stock entries to see them here.','reg')}</section>`}
- return head()+hero+kp+seg+body+`<div class="sec" style="margin-top:22px"><h2>Quick add</h2><div class="row"><button class="btn" data-act="add" data-m="stock">${ic('dress',16)}<span>Design</span></button><button class="btn" data-act="add" data-m="reg">${ic('list',16)}<span>Stock entry</span></button><button class="btn" data-act="add" data-m="asg">${ic('users',16)}<span>Assignment</span></button><button class="btn" data-act="add" data-m="del">${ic('truck',16)}<span>Delivery</span></button></div></div>`}
+ return head(canWA()?`<div class="pha row"><button class="btn btn-wa" data-act="wa">${ic('wa',18)}<span>WhatsApp report</span></button></div>`:'')+hero+kp+seg+body+`<div class="sec" style="margin-top:22px"><h2>Quick add</h2><div class="row"><button class="btn" data-act="add" data-m="stock">${ic('dress',16)}<span>Design</span></button><button class="btn" data-act="add" data-m="reg">${ic('list',16)}<span>Stock entry</span></button><button class="btn" data-act="add" data-m="asg">${ic('users',16)}<span>Assignment</span></button><button class="btn" data-act="add" data-m="del">${ic('truck',16)}<span>Delivery</span></button></div></div>`}
 
 /* ---------- dashboard: Order Care ---------- */
 function dash2(){const D=DB[2],st=stats2(),
@@ -960,6 +970,62 @@ function csv(m){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',c=M[m];let r
  else{const fs=c.f.filter(f=>f.t!=='image');rows=[fs.map(f=>f.l),...DB[c.site][m].map(r=>fs.map(f=>r[f.k]))]}
  if(rows.length<2){toast('Nothing to export yet.','er');return}
  dlFile(c.t.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+today()+'.csv','\ufeff'+rows.map(r=>r.map(q).join(',')).join('\r\n'),'text/csv');toast('CSV downloaded')}
+/* ---------- WhatsApp: holding report for the team group (admin and staff only) ---------- */
+function reportText(){const R=DB[1].reg,U={},S={},SU={};let tU=0,tS=0,tSU=0;
+ R.forEach(r=>{const inn=+r.in||0,out=+r.out||0,net=inn-out,name=r.name||'Unnamed',st=String(r.stitch||'').trim(),un=st.toLowerCase()==='unstitched';
+  if(net){const extra=!un&&st&&st.toLowerCase()!=='stitched'?' ('+st.replace(/^stitched\s*/i,'').trim()+')':'',k=name+extra,G=un?U:S,o=G[k]=G[k]||{n:0,sz:{}};o.n+=net;const z=String(r.size||'').trim();if(z)o.sz[z]=(o.sz[z]||0)+net;if(un)tU+=net;else tS+=net}
+  const to=String(r.to||'').trim().toLowerCase(),fr=String(r.from||'').trim().toLowerCase();
+  if(to==='stitching unit'&&out){SU[name]=(SU[name]||0)+out;tSU+=out}if(fr==='stitching unit'&&inn){SU[name]=(SU[name]||0)-inn;tSU-=inn}});
+ const pos=G=>Object.values(G).reduce((t,o)=>t+(o.n>0?o.n:0),0);tU=pos(U);tS=pos(S);tSU=Object.values(SU).reduce((t,v)=>t+(v>0?v:0),0);
+ const sizes=o=>{const sz=Object.entries(o.sz).filter(([,v])=>v>0);if(!sz.length||(sz.length===1&&/^custom$/i.test(sz[0][0])))return '';return ' _'+sz.map(([s,v])=>sz.length>1||v>1?`${s}×${v}`:s).join(', ')+'_'};
+ const list=G=>{const a=Object.entries(G).filter(([,o])=>o.n>0).sort((x,y)=>y[1].n-x[1].n||x[0].localeCompare(y[0]));return a.length?a.map(([k,o])=>`• ${k} – *${o.n}*${sizes(o)}`).join('\n'):'_None in hand_'};
+ const byU={};R.forEach(r=>{if(String(r.stitch||'').trim().toLowerCase()!=='unstitched')return;const k=r.name||'Unnamed';byU[k]=(byU[k]||0)+(+r.in||0)-(+r.out||0)});
+ const low=Object.entries(byU).filter(([,v])=>v>0&&v<=3).sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0])),oos=(DB[1].oos||[]).map(r=>r.name).filter(Boolean);
+ const su=Object.entries(SU).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]),od=DB[1].del.filter(isOver).sort((a,b)=>String(a.disp).localeCompare(String(b.disp)));
+ const sd=s=>isISO(s)?new Date(s+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'}):s;
+ const _d=new Date(),dt=`${_d.toLocaleDateString('en-IN',{weekday:'short'})} ${_d.getDate()} ${_d.toLocaleDateString('en-IN',{month:'short'})} ${_d.getFullYear()}`,line='━━━━━━━━━━━━━━';
+ return [`*RIFAH'S KALEIDOSCOPE*`,`_Holding report, ${dt}_`,line,
+ `📦 *In hand: ${tU+tS} pieces*`,`🧵 Unstitched: *${tU}*`,`👗 Stitched: *${tS}*`,`✂️ At stitching unit: *${Math.max(0,tSU)}*`,`⚠️ Low stock: *${low.length}*`,`🚚 Overdue parcels: *${od.length}*`,line,
+ `🧵 *UNSTITCHED (${tU})*`,list(U),'',
+ `👗 *STITCHED (${tS})*`,list(S),'',
+ `✂️ *AT THE STITCHING UNIT (${Math.max(0,tSU)})*`,su.length?su.map(([k,v])=>`• ${k} – *${v}*`).join('\n'):'_Nothing at the stitching unit_','',
+ `⚠️ *LOW STOCK (unstitched, 3 or less)*`,low.length?low.map(([k,v])=>`• ${k} – *${v} left*`).join('\n'):'_Nothing running low_',
+ ...(oos.length?['',`🚫 *MARKED OUT OF STOCK*`,oos.map(n=>`• ${n}`).join('\n')]:[]),'',
+ `🚚 *OVERDUE PARCELS (25+ days)*`,od.length?od.map(r=>`• ${r.cust} – *${daysSince(r.disp)} days*\n   _Sent ${sd(r.disp)}${r.track?', '+r.track:''}${r.status?', '+r.status:''}_`).join('\n'):'✅ _None, all parcels on time_',
+ line,`_Sent from Stock Studio_`].join('\n')}
+const canWA=()=>!!me&&['admin','staff'].includes(me.role); // admin and staff send the WhatsApp report (not owner)
+const waCfg=()=>Object.assign({name:'test 1',link:''},(DB[1].meta||{}).wa||{});
+function waOpen(){if(!canWA())return toast('Only admin and staff can send the WhatsApp report.','er');const c=waCfg();
+ dlg(`${dlgHead('Send report to WhatsApp')}<div class="db"><p class="cs" style="margin-top:0">Unstitched, stitched, stitching unit, low stock and overdue parcels, ready to send. You can edit it first.</p>
+<div class="fld"><label for="wa_txt">Message</label><textarea id="wa_txt" rows="14" class="watxt">${esc(reportText())}</textarea></div>
+<div class="fg" style="margin-top:14px"><div class="fld"><label for="wa_name">Group name</label><input id="wa_name" value="${esc(c.name)}" autocomplete="off"></div>
+<div class="fld"><label for="wa_link">Group invite link (optional)</label><input id="wa_link" type="url" inputmode="url" value="${esc(c.link)}" placeholder="https://chat.whatsapp.com/…" autocomplete="off"><span class="ferr" id="e_wa"></span></div></div>
+<p class="hint">${c.link?`The message is copied and the group opens. Just paste and send.`:`Without a link, WhatsApp opens with the message ready and you pick the group. Add the invite link (Group info → Invite via link) to open the group directly.`}</p></div>
+<div class="df">${isDesk()?`<button type="button" class="btn" data-act="wasend" id="wasend">${ic('wa',18)}<span>Send to ${esc(c.name||'group')}</span></button><button type="button" class="btn btn-wa" data-act="wadesk">${ic('list',16)}<span>Copy for WhatsApp Web</span></button>`:`<button type="button" class="btn" data-act="wacopy">${ic('list',16)}<span>Copy text</span></button><button type="button" class="btn btn-wa" data-act="wasend" id="wasend">${ic('wa',18)}<span>Send to ${esc(c.name||'group')}</span></button>`}</div>`);
+ $('#wa_name').addEventListener('input',e=>{const b=$('#wasend span');if(b)b.textContent='Send to '+(e.target.value.trim()||'group')})}
+function copySync(t){const a=$('#wa_txt');let ok=false;try{a.focus();a.select();a.setSelectionRange(0,t.length);ok=document.execCommand('copy')}catch(e){}if(!ok&&navigator.clipboard)navigator.clipboard.writeText(t).catch(()=>{});return true}
+function waSend(){if(!canWA())return;const t=$('#wa_txt').value.trim(),name=$('#wa_name').value.trim()||'test 1',link=$('#wa_link').value.trim();$('#e_wa').textContent='';
+ if(!t)return toast('The message is empty.','er');
+ if(link&&!/^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+/.test(link)){$('#e_wa').textContent='Paste the group invite link, starting with https://chat.whatsapp.com/';$('#wa_link').focus();return}
+ let w;
+ if(link){copySync(t);w=window.open(link,'_blank');toast(`Message copied. Paste it in ${name} and send.`)}
+ else{const url='https://wa.me/?text='+encodeURIComponent(t);w=window.open(url,'_blank');if(!w)location.href=url;toast(`Choose ${name} in WhatsApp and send.`)}
+ if(link&&!w)location.href=link;
+ const c=waCfg();if(c.name!==name||c.link!==link)mut(1,D=>{D.meta.wa={name,link}},'Group saved');
+ $('#dlg').close()}
+const isDesk=()=>matchMedia('(pointer:fine)').matches&&innerWidth>900;
+const isMac=()=>/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent);
+function waDesk(){if(!canWA())return;const t=$('#wa_txt').value.trim(),name=$('#wa_name').value.trim()||'test 1',link=$('#wa_link').value.trim();
+ if(!t)return toast('The message is empty.','er');copySync(t);
+ const c=waCfg();if(c.name!==name||(link&&c.link!==link&&/^https:\/\/chat\.whatsapp\.com\//.test(link)))mut(1,D=>{D.meta.wa={name,link:link||c.link}},'Group saved');
+ const k=isMac()?'⌘':'Ctrl';
+ dlg(`${dlgHead('Report copied')}<div class="db"><div class="copied">${ic('check',22)}<b>The report is copied.</b></div>
+<ol class="steps"><li>Go to your <b>WhatsApp Web</b> tab and open <b>${esc(name)}</b>.</li><li>Click the message box and press <kbd>${k}</kbd> + <kbd>V</kbd>.</li><li>Press <kbd>Enter</kbd> to send.</li></ol>
+<p class="hint">Tip: pin ${esc(name)} at the top of your chats in WhatsApp Web so it is always one click away.</p></div>
+<div class="df"><button type="button" class="btn" data-act="waweb">${ic('wa',18)}<span>Open WhatsApp Web</span></button><button type="button" class="btn btn-pri" data-act="close">Done</button></div>`)}
+function waWeb(){const w=window.open('https://web.whatsapp.com/','rk_whatsapp');if(!w)location.href='https://web.whatsapp.com/';$('#dlg').close()}
+async function waCopy(){const t=$('#wa_txt').value;copySync(t);toast('Message copied. Paste it in WhatsApp.')}
+
 /* =====================================================================
    DATA CARE (admin only): overview, backup, monthly clean-up, restore
    ===================================================================== */
@@ -1117,6 +1183,7 @@ rmimg:()=>{$('#imgwrap').dataset.rm='1';const p=$('#imgprev');if(p)p.remove()},
 additem:()=>{draftItems.push(blankItem());refreshItems();const f=$('#i'+(draftItems.length-1)+'n');if(f)f.focus()},
 rmitem:b=>{draftItems.splice(+b.dataset.i,1);if(!draftItems.length)draftItems.push(blankItem());refreshItems()},
 backup:()=>backup(),restore:()=>{if(!isAdmin())return toast('Only the admin can restore a backup.','er');$('#rf').click()},
+wa:()=>waOpen(),wasend:()=>waSend(),wacopy:()=>waCopy(),wadesk:()=>waDesk(),waweb:()=>waWeb(),
 cleanmo:b=>{cleanMonths=+b.dataset.mo;draw()},cleanask:()=>cleanAsk(),cleango:b=>cleanGo(b),restmerge:b=>restMerge(b),restall:b=>restAll(b),
 peek:b=>{const i=b.parentNode.querySelector('input');i.type=i.type==='password'?'text':'password';b.setAttribute('aria-label',i.type==='password'?'Show password':'Hide password')}};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const f=ACT[b.dataset.act];if(f){e.preventDefault();f(b,e)}});
