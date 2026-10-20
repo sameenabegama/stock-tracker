@@ -545,7 +545,7 @@ kbd{font:700 13px/1 var(--sans);padding:4px 8px;border-radius:7px;border:1.5px s
 const SB={url:'https://jeyyeqvexpzoylsrdlmk.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpleXllcXZleHB6b3lsc3JkbG1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1Njk0NTAsImV4cCI6MjEwNjE0NTQ1MH0.a5YtjwWX1D6-Cw8q9PAo0GOxYu6sj41rwNWyv2emh70'};
 /* ================================================================= */
 
-const APP_VERSION='v24';
+const APP_VERSION='v25 (stitch types)';
 /* ---------- helpers ---------- */
 const $=(s,e=document)=>e.querySelector(s),
 esc=s=>String(s??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),
@@ -557,7 +557,7 @@ isISO=s=>/^\d{4}-\d{2}-\d{2}$/.test(s||''),
 fd=s=>isISO(s)?new Date(s+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):esc(s),
 daysSince=d=>isISO(d)?Math.floor((new Date(today()+'T00:00:00')-new Date(d+'T00:00:00'))/864e5):0;
 
-const SZ=['XS','S','M','L','XL','XXL','XXXL','Free Size','Custom'],ST=['Unstitched','Stitched','Stitched Without Pant & Duppatta'],
+const SZ=['XS','S','M','L','XL','XXL','XXXL','Free Size','Custom'],ST=['Unstitched','Stitched','Others'],
 DS=['Pending','Packed','Dispatched','Out for Delivery','Delivered','Returned'],
 G='in gate',H='Rifah Mam from house',KEY={1:'data',2:'care'},S2K=['courier','delays','exch','intl','express'];
 
@@ -628,7 +628,7 @@ const M={
 stock:{site:1,t:'Stock list',s:'design',icon:'dress',d:'Your designs, prices and photos. Tap a design name to see its photo.',prim:'name',sort:'name',empty:['No designs yet','Add your first design to build your catalogue.'],
  f:[fl('name','Design name','text',{req:1}),fl('coll','Collection','text',{def:'KOTA DORIYA'}),fl('price','Price (Rs.)','number'),fl('ref','Description','text',{full:1}),NOTES,fl('image','Photo (optional)','image')]},
 reg:{site:1,t:'Stock register',s:'stock entry',icon:'list',d:'Every piece that comes in or goes out. Holding = Qty in minus Qty out.',prim:'name',sort:'date',empty:['No stock entries yet','Log pieces as they come in or go out.'],
- f:[fl('date','Date','date'),fl('name','Design name','text',{req:1,dl:'stocks'}),fl('stitch','Stitch type','text',{dl:'stitch'}),fl('size','Size','text',{dl:'sizes'}),fl('from','Received from'),fl('to','Delivered to'),fl('dd','Date delivered','date'),fl('in','Qty in','number',{def:1}),fl('out','Qty out','number'),fl('status','Packing','select',{o:['','Packed'],ol:{'':'Unpacked'}}),NOTES],
+ f:[fl('date','Date','date'),fl('name','Design name','text',{req:1,dl:'stocks'}),fl('stitch','Stitch type','select',{o:ST}),fl('size','Size','text',{dl:'sizes'}),fl('from','Received from'),fl('to','Delivered to'),fl('dd','Date delivered','date'),fl('in','Qty in','number',{def:1}),fl('out','Qty out','number'),fl('status','Packing','select',{o:['','Packed'],ol:{'':'Unpacked'}}),NOTES],
  x:['Holding',r=>`<b>${(+r.in||0)-(+r.out||0)}</b>`]},
 asg:{site:1,t:'Assignments',s:'assignment',icon:'users',d:'What each customer has ordered. One customer can have several items.',prim:'cust',empty:['No assignments yet','Add what each customer has ordered.']},
 oos:{site:1,t:'Out of stock',s:'out of stock design',icon:'alert',d:'Designs you mark as out of stock yourself.',prim:'name',empty:['Nothing marked','Add designs you want to mark as out of stock.'],
@@ -651,6 +651,8 @@ const TONE={Pending:'wn',Open:'wn',Waiting:'wn',No:'wn','In progress':'in',Stitc
 const badge=v=>v?`<span class="b ${TONE[v]||'mu'}">${esc(v)}</span>`:'';
 const intlDone=r=>(r.items||[]).length>0&&r.items.every(i=>M.intl.done.includes(i.process));
 const isDone=(m,r)=>m==='intl'?intlDone(r):M[m].done.includes(r[M[m].st]);
+/* stitch type group: U = Unstitched, S = Stitched, O = Others (anything else, e.g. older 'Stitched Without Pant & Duppatta') */
+const stG=s=>{const v=String(s||'').trim().toLowerCase();return v==='unstitched'?'U':v==='stitched'?'S':'O'};
 const isOver=r=>!['Delivered','Returned'].includes(r.status)&&!!r.disp&&daysSince(r.disp)>=25;
 const pr=n=>{const s=(DB[1].stock||[]).find(s=>s.name===n);return s?(+s.price||0):0};
 
@@ -787,13 +789,13 @@ function dash1(){const D=DB[1],
  D.reg.forEach(r=>{const k=r.name||'Unnamed';by[k]=(by[k]||0)+(+r.in||0)-(+r.out||0)});
  const top=Object.entries(by).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]),mx=Math.max(1,...top.map(t=>t[1]));
  let holdS=0,holdU=0,packed=0,unpacked=0,unit=0;
- D.reg.forEach(r=>{const net=(+r.in||0)-(+r.out||0);if(r.stitch==='Unstitched')holdU+=net;else holdS+=net;
+ let holdO=0;D.reg.forEach(r=>{const net=(+r.in||0)-(+r.out||0),gp=stG(r.stitch);if(gp==='U')holdU+=net;else if(gp==='S')holdS+=net;else holdO+=net;
   if(net>0){if(r.status==='Packed')packed+=net;else unpacked+=net}
   const to=(r.to||'').trim().toLowerCase(),from=(r.from||'').trim().toLowerCase();
   if(to==='stitching unit')unit+=(+r.out||0);if(from==='stitching unit')unit-=(+r.in||0)});
- const hold=holdS+holdU,
+ const hold=holdS+holdU+holdO,
  hero=`<section class="hero buti"><div><h2><span class="dot${od.length?' late':''}"></span>${od.length?`${od.length} ${od.length===1?'parcel is':'parcels are'} overdue`:'All parcels are on time'}</h2><p>${od.length?'Dispatched 25 or more days ago and not delivered yet. Check with the courier.':`You are holding ${hold} ${hold===1?'piece':'pieces'} of ${top.length} ${top.length===1?'design':'designs'}.`}</p></div>${rail(1)}</section>`,
- kp=`<div class="kpis k3">${kpi('dress','Pieces in holding',hold,`${holdS} stitched, ${holdU} unstitched`,{go:'reg'})}${kpi('truck','On the way',open.length,'Parcels not delivered yet',{go:'del'})}${kpi('clock','Overdue',od.length,'25+ days since dispatch',{late:od.length>0,go:'del'})}</div>`,
+ kp=`<div class="kpis k3">${kpi('dress','Pieces in holding',hold,`${holdS} stitched, ${holdU} unstitched${holdO?`, ${holdO} others`:''}`,{go:'reg'})}${kpi('truck','On the way',open.length,'Parcels not delivered yet',{go:'del'})}${kpi('clock','Overdue',od.length,'25+ days since dispatch',{late:od.length>0,go:'del'})}</div>`,
  lowAt=3,byU={},
  low=(D.reg.forEach(r=>{if(String(r.stitch||'').trim().toLowerCase()!=='unstitched')return;const k=r.name||'Unnamed';byU[k]=(byU[k]||0)+(+r.in||0)-(+r.out||0)}),Object.entries(byU).filter(([,v])=>v>0&&v<=lowAt).sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0]))),
  oos=D.oos||[],
@@ -805,7 +807,7 @@ function dash1(){const D=DB[1],
 ${low.length?`<div class="dgrid">${low.map(tile).join('')}</div>`:`<div class="lr"><div><b>No unstitched design is running low</b><small>Every unstitched design has more than ${lowAt} pieces, or none in hand.</small></div><span class="b ok">All good</span></div>`}</section>
 <section class="card pad" style="margin-top:16px"><div class="htools"><div><h2 style="font-size:25px">Out of stock</h2><p class="cs" style="margin:3px 0 0">Designs you mark yourself. This list does not change the stock register.</p></div><button class="btn btn-pri sm" data-act="add" data-m="oos">${ic('plus',16)}<span>Add design</span></button></div>
 ${oos.length?`<div class="dgrid">${[...oos].sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(r=>`<button class="dt out" data-act="edit" data-m="oos" data-id="${r.id}"><span class="dr"><span class="dn">${esc(r.name)}</span>${ic('pencil',15)}</span><small>${r.date?'Since '+fd(r.date):'Out of stock'}</small>${r.notes?`<span class="onote">${esc(r.notes)}</span>`:''}</button>`).join('')}</div>`:`<div class="lr"><div><b>Nothing marked out of stock</b><small>Tap "Add design" to mark one. Tap a design later to edit or remove it.</small></div></div>`}</section>`}
- else if(dashTab==='where')body=`<div class="places">${kpi('dress','Stitched',holdS,'Ready-stitched pieces in hand')}${kpi('tag','Unstitched',holdU,'Fabric sets not stitched yet')}${kpi('scissors','At the stitching unit',unit,'Sent there, not back yet')}${kpi('box','Packed',packed,'Ready to send')}${kpi('inbox','Not packed yet',unpacked,'Still to pack')}</div>`;
+ else if(dashTab==='where')body=`<div class="places">${kpi('dress','Stitched',holdS,'Ready-stitched pieces in hand')}${kpi('tag','Unstitched',holdU,'Fabric sets not stitched yet')}${kpi('spark','Others',holdO,'Other stitch types')}${kpi('scissors','At the stitching unit',unit,'Sent there, not back yet')}${kpi('box','Packed',packed,'Ready to send')}${kpi('inbox','Not packed yet',unpacked,'Still to pack')}</div>`;
  else if(dashTab==='del')body=`<div class="g2"><section class="card pad"><div class="ch"><h2>Parcels by status</h2></div><p class="cs">Every parcel in Deliveries.</p>${D.del.length?DS.map(s=>lrow(badge(s),D.del.filter(r=>r.status===s).length,'',`data-act="sheet" data-m="del" data-f="all"`)).join(''):emptyBox('No parcels yet','Add a parcel when you dispatch it.','del')}</section>
 <section class="card pad"><div class="ch"><h2>Overdue parcels</h2></div><p class="cs">Dispatched 25 or more days ago, not delivered.</p>${od.length?od.map(r=>lrow(esc(r.cust),`<span class="b er">${daysSince(r.disp)} days</span>`,'Dispatched '+fd(r.disp),`data-act="edit" data-m="del" data-id="${r.id}"`)).join(''):`<div class="lr"><div><b>Nothing is overdue</b><small>Every parcel is within 25 days of dispatch.</small></div><span class="b ok">On time</span></div>`}</section></div>`;
  else{const LIM=12,shownTop=holdAll?top:top.slice(0,LIM);
@@ -863,7 +865,7 @@ const dlgHead=t=>`<div class="dh"><h3 id="dlgt">${t}</h3><button type="button" c
 function fieldHTML(f,r){const{k,l,t}=f,v=r[k]??'',lab=`<label for="f_${k}">${k==='notes'?ic('note',15):''}${l}${f.req?'<span class="req" aria-hidden="true">*</span>':''}</label>`,er=`<span class="ferr" id="e_${k}"></span>`;
  if(t==='image')return `<div class="fld full" id="imgwrap" data-rm="0">${lab}${v?`<div class="pv" id="imgprev"><img src="${esc(v)}" alt=""><button type="button" class="btn btn-ghost btn-dng sm" data-act="rmimg">Remove photo</button></div>`:''}<input id="f_${k}" type="file" accept="image/*"><span class="hint">Optional. JPG or PNG, up to 5 MB.</span>${er}</div>`;
  const full=f.full||t==='textarea'?' full':'';let inner;
- if(t==='select'){const o=f.o.includes(v)||v===''?f.o:[...f.o,v];inner=`<select id="f_${k}">${o.map(x=>`<option value="${esc(x)}"${x===v?' selected':''}>${esc((f.ol&&f.ol[x])||x||'Not set')}</option>`).join('')}</select>`}
+ if(t==='select'){const o=f.o.includes(v)?f.o:(v===''&&f.o.includes('')?f.o:[...f.o,v]);inner=`<select id="f_${k}">${o.map(x=>`<option value="${esc(x)}"${x===v?' selected':''}>${esc((f.ol&&f.ol[x])||x||'Not set')}</option>`).join('')}</select>`}
  else if(t==='textarea')inner=`<textarea id="f_${k}" rows="3" placeholder="${esc(f.ph||'')}">${esc(v)}</textarea>`;
  else inner=`<input id="f_${k}" type="${t}" value="${esc(v)}"${t==='number'?' min="0" inputmode="numeric"':''}${f.dl?` list="${f.dl}"`:''}${f.req?' aria-required="true"':''} autocomplete="off">`;
  return `<div class="fld${full}">${lab}${inner}${er}</div>`}
@@ -909,7 +911,7 @@ const asgTotal=items=>items.reduce((t,it)=>t+(+it.qty||0)*pr(it.name),0);
 function asgTbl(rows){return `<table class="rt"><thead><tr><th>Date</th><th>Customer</th><th>Items</th><th>Qty</th><th>Amount (Rs.)</th><th>Notes</th><th><span class="sr">Edit</span></th></tr></thead><tbody>${rows.map(r=>{const items=r.items||[],qty=items.reduce((t,it)=>t+(+it.qty||0),0),summary=items.map(it=>`${esc(it.name)}${it.size?' ('+esc(it.size)+')':''} ×${esc(it.qty)}`).join(', '),note=[r.notes,...items.map(i=>i.notes)].filter(Boolean).join('. ');
  return `<tr data-act="edit" data-m="asg" data-id="${r.id}"><td data-label="Date">${fd(r.date)}</td><td data-label="Customer" data-p>${esc(r.cust)}</td><td data-label="Items" class="wrap">${summary}</td><td data-label="Qty">${qty}</td><td data-label="Amount (Rs.)"><b>${inr(asgTotal(items))}</b></td><td class="note" data-label="Notes">${note?`<span class="nt">${esc(note)}</span>`:''}</td><td class="act"><button class="ib" data-act="edit" data-m="asg" data-id="${r.id}" aria-label="Edit">${ic('pencil',16)}</button></td></tr>`}).join('')}</tbody></table>`}
 let itemMode='asg';
-const blankItem=()=>itemMode==='intl'?{order:'',process:'Pending',due:'',notes:''}:{name:'',stitch:'',size:'',qty:1,notes:''};
+const blankItem=()=>itemMode==='intl'?{order:'',process:'Pending',due:'',notes:''}:{name:'',stitch:'Unstitched',size:'',qty:1,notes:''};
 function asgEdit(id){const r=id?DB[1].asg.find(x=>x.id===id):{date:today(),cust:'',notes:''};
  if(id&&!r){toast('That assignment was removed by someone else.','er');rerender();return}
  itemMode='asg';draftItems=id?(r.items||[]).map(x=>({...x})):[blankItem()];if(!draftItems.length)draftItems=[blankItem()];
@@ -924,7 +926,7 @@ ${r.by?`<p class="meta">Last saved by ${esc(r.by)} on ${fd(r.at)}</p>`:''}</div>
 function itemsHTML(){return itemMode==='intl'?intlItemsHTML():asgItemsHTML()}
 function asgItemsHTML(){return draftItems.map((it,i)=>`<div class="itemcard"><div class="ih"><b>Item ${i+1}</b>${draftItems.length>1?`<button type="button" class="btn btn-ghost btn-dng sm" data-act="rmitem" data-i="${i}">Remove</button>`:''}</div><div class="fg">
 <div class="fld"><label for="i${i}n">Design<span class="req" aria-hidden="true">*</span></label><input id="i${i}n" value="${esc(it.name)}" list="stocks" data-i="${i}" data-k="name" autocomplete="off"></div>
-<div class="fld"><label for="i${i}s">Stitch type</label><input id="i${i}s" value="${esc(it.stitch)}" list="stitch" data-i="${i}" data-k="stitch" autocomplete="off"></div>
+<div class="fld"><label for="i${i}s">Stitch type</label><select id="i${i}s" data-i="${i}" data-k="stitch">${(ST.includes(it.stitch)?ST:[...ST,it.stitch||'']).map(s=>`<option value="${esc(s)}"${s===(it.stitch||'')?' selected':''}>${esc(s||'Not set')}</option>`).join('')}</select></div>
 <div class="fld"><label for="i${i}z">Size</label><input id="i${i}z" value="${esc(it.size)}" list="sizes" data-i="${i}" data-k="size" autocomplete="off"></div>
 <div class="fld"><label for="i${i}q">Qty</label><input id="i${i}q" type="number" min="1" inputmode="numeric" value="${esc(it.qty)}" data-i="${i}" data-k="qty"></div>
 <div class="fld full"><label for="i${i}o">${ic('note',15)}Item notes</label><input id="i${i}o" value="${esc(it.notes)}" data-i="${i}" data-k="notes" autocomplete="off"></div></div></div>`).join('')}
@@ -982,12 +984,12 @@ function csv(m){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',c=M[m];let r
  if(rows.length<2){toast('Nothing to export yet.','er');return}
  dlFile(c.t.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+today()+'.csv','\ufeff'+rows.map(r=>r.map(q).join(',')).join('\r\n'),'text/csv');toast('CSV downloaded')}
 /* ---------- WhatsApp: holding report for the team group (admin and staff) ---------- */
-function reportText(){const R=DB[1].reg,U={},S={},SU={};let tU=0,tS=0,tSU=0;
+function reportText(){const R=DB[1].reg,U={},S={},O={},SU={};let tU=0,tS=0,tO=0,tSU=0;
  R.forEach(r=>{const inn=+r.in||0,out=+r.out||0,net=inn-out,name=r.name||'Unnamed',st=String(r.stitch||'').trim(),un=st.toLowerCase()==='unstitched';
-  if(net){const extra=!un&&st&&st.toLowerCase()!=='stitched'?' ('+st.replace(/^stitched\s*/i,'').trim()+')':'',k=name+extra,G=un?U:S,o=G[k]=G[k]||{n:0,sz:{}};o.n+=net;const z=String(r.size||'').trim();if(z)o.sz[z]=(o.sz[z]||0)+net;if(un)tU+=net;else tS+=net}
+  if(net){const gp=stG(st),extra=gp==='O'&&st&&st.toLowerCase()!=='others'?' ('+st.replace(/^stitched\s*/i,'').trim()+')':'',k=name+extra,G=gp==='U'?U:gp==='S'?S:O,o=G[k]=G[k]||{n:0,sz:{}};o.n+=net;const z=String(r.size||'').trim();if(z)o.sz[z]=(o.sz[z]||0)+net}
   const to=String(r.to||'').trim().toLowerCase(),fr=String(r.from||'').trim().toLowerCase();
   if(to==='stitching unit'&&out){SU[name]=(SU[name]||0)+out;tSU+=out}if(fr==='stitching unit'&&inn){SU[name]=(SU[name]||0)-inn;tSU-=inn}});
- const pos=G=>Object.values(G).reduce((t,o)=>t+(o.n>0?o.n:0),0);tU=pos(U);tS=pos(S);tSU=Object.values(SU).reduce((t,v)=>t+(v>0?v:0),0);
+ const pos=G=>Object.values(G).reduce((t,o)=>t+(o.n>0?o.n:0),0);tU=pos(U);tS=pos(S);tO=pos(O);tSU=Object.values(SU).reduce((t,v)=>t+(v>0?v:0),0);
  const sizes=o=>{const sz=Object.entries(o.sz).filter(([,v])=>v>0);if(!sz.length||(sz.length===1&&/^custom$/i.test(sz[0][0])))return '';return ' _'+sz.map(([s,v])=>sz.length>1||v>1?`${s}×${v}`:s).join(', ')+'_'};
  const list=G=>{const a=Object.entries(G).filter(([,o])=>o.n>0).sort((x,y)=>y[1].n-x[1].n||x[0].localeCompare(y[0]));return a.length?a.map(([k,o])=>`• ${k} – *${o.n}*${sizes(o)}`).join('\n'):'_None in hand_'};
  const byU={};R.forEach(r=>{if(String(r.stitch||'').trim().toLowerCase()!=='unstitched')return;const k=r.name||'Unnamed';byU[k]=(byU[k]||0)+(+r.in||0)-(+r.out||0)});
@@ -996,9 +998,10 @@ function reportText(){const R=DB[1].reg,U={},S={},SU={};let tU=0,tS=0,tSU=0;
  const sd=s=>isISO(s)?new Date(s+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'}):s;
  const _d=new Date(),dt=`${_d.toLocaleDateString('en-IN',{weekday:'short'})} ${_d.getDate()} ${_d.toLocaleDateString('en-IN',{month:'short'})} ${_d.getFullYear()}`,line='━━━━━━━━━━━━━━';
  return [`*RIFAH'S KALEIDOSCOPE*`,`_Holding report, ${dt}_`,line,
- `📦 *In hand: ${tU+tS} pieces*`,`🧵 Unstitched: *${tU}*`,`👗 Stitched: *${tS}*`,`✂️ At stitching unit: *${Math.max(0,tSU)}*`,`⚠️ Low stock: *${low.length}*`,`🚚 Overdue parcels: *${od.length}*`,line,
+ `📦 *In hand: ${tU+tS+tO} pieces*`,`🧵 Unstitched: *${tU}*`,`👗 Stitched: *${tS}*`,...(tO?[`🧩 Others: *${tO}*`]:[]),`✂️ At stitching unit: *${Math.max(0,tSU)}*`,`⚠️ Low stock: *${low.length}*`,`🚚 Overdue parcels: *${od.length}*`,line,
  `🧵 *UNSTITCHED (${tU})*`,list(U),'',
  `👗 *STITCHED (${tS})*`,list(S),'',
+ ...(tO?[`🧩 *OTHERS (${tO})*`,list(O),'']:[]),
  `✂️ *AT THE STITCHING UNIT (${Math.max(0,tSU)})*`,su.length?su.map(([k,v])=>`• ${k} – *${v}*`).join('\n'):'_Nothing at the stitching unit_','',
  `⚠️ *LOW STOCK (unstitched, 3 or less)*`,low.length?low.map(([k,v])=>`• ${k} – *${v} left*`).join('\n'):'_Nothing running low_',
  ...(oos.length?['',`🚫 *MARKED OUT OF STOCK*`,oos.map(n=>`• ${n}`).join('\n')]:[]),'',
