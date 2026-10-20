@@ -545,7 +545,7 @@ kbd{font:700 13px/1 var(--sans);padding:4px 8px;border-radius:7px;border:1.5px s
 const SB={url:'https://jeyyeqvexpzoylsrdlmk.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpleXllcXZleHB6b3lsc3JkbG1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1Njk0NTAsImV4cCI6MjEwNjE0NTQ1MH0.a5YtjwWX1D6-Cw8q9PAo0GOxYu6sj41rwNWyv2emh70'};
 /* ================================================================= */
 
-const APP_VERSION='v23 (staff WhatsApp only)';
+const APP_VERSION='v24';
 /* ---------- helpers ---------- */
 const $=(s,e=document)=>e.querySelector(s),
 esc=s=>String(s??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),
@@ -1040,13 +1040,13 @@ async function waCopy(){const t=$('#wa_txt').value;copySync(t);toast('Message co
 /* ---------- "Send to WhatsApp" tab: preview + copy as text (admin and staff) ---------- */
 function waFmt(t){return esc(t).replace(/\*([^*\n]+)\*/g,'<b>$1</b>').replace(/(^|[\s(])_([^_\n]+)_/g,'$1<i>$2</i>').replace(/\n/g,'<br>')}
 function waPage(){if(!canWA())return '';const t=reportText();
- return `<div class="ph"><div><h1>Send to WhatsApp</h1><p>Today’s report: unstitched, stitched, stitching unit, low stock and overdue parcels. Copy it and paste it in your WhatsApp group.</p></div></div>
+ return `<div class="ph"><div><h1>Send to WhatsApp</h1><p>Today’s report: unstitched, stitched, stitching unit, low stock and overdue parcels. Copy it and paste it in WhatsApp.</p></div></div>
 <div class="wagrid"><section class="card pad"><div class="htools"><div><h2 style="font-size:25px">Preview</h2><p class="cs" style="margin:3px 0 0">This is how it will look in WhatsApp.</p></div><button class="btn sm" data-act="warefresh">${ic('repeat',15)}<span>Refresh</span></button></div>
 <div class="wachat"><div class="wabubble" id="wa_prev">${waFmt(t)}</div></div></section>
 <aside class="card pad wacopy"><h2 style="font-size:25px">Copy and send</h2>
 <button class="btn btn-wa big" data-act="wacopytab" id="wacopybtn">${ic('list',18)}<span>Copy as text</span></button>
 <div class="copied" id="wa_ok" hidden>${ic('check',20)}<b>Copied!</b></div>
-<ol class="steps"><li>Tap <b>Copy as text</b>.</li><li>Open your group <b>${esc(waCfg().name||'test 1')}</b> in WhatsApp.</li><li>Paste with <kbd>Ctrl</kbd> + <kbd>V</kbd> (or long-press, then Paste on a phone).</li><li>Press <b>Send</b>.</li></ol>
+
 <details class="how"><summary><b>Edit the text first</b></summary><textarea id="wa_txt" rows="14" class="watxt" style="margin-top:12px">${esc(t)}</textarea><p class="hint">Changes show in the preview and are copied.</p></details></aside></div>`}
 async function copyText(t){try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(t);return true}}catch(e){}
  const a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(a);a.select();a.setSelectionRange(0,t.length);let ok=false;try{ok=document.execCommand('copy')}catch(e){}a.remove();return ok}
