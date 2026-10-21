@@ -492,6 +492,8 @@ kbd{font:700 13px/1 var(--sans);padding:4px 8px;border-radius:7px;border:1.5px s
 .wacopy{position:sticky;top:20px;display:grid;gap:14px}
 .wacopy .steps{margin:4px 0 0}
 @media(max-width:1100px){.wagrid{grid-template-columns:1fr}.wacopy{position:static;order:-1}}
+.wabubble .mono{display:block;max-width:100%;white-space:pre;overflow-x:auto;font:12.5px/1.5 ui-monospace,Menlo,Consolas,'Courier New',monospace;margin:4px 0}
+@media(max-width:480px){.wabubble .mono{font-size:10.5px}.wachat{padding:10px}}
 /* ---------- extra polish for every screen size ---------- */
 @media(max-width:1200px){.sheets{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(min-width:721px) and (max-width:1100px){
@@ -545,7 +547,7 @@ kbd{font:700 13px/1 var(--sans);padding:4px 8px;border-radius:7px;border:1.5px s
 const SB={url:'https://jeyyeqvexpzoylsrdlmk.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpleXllcXZleHB6b3lsc3JkbG1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1Njk0NTAsImV4cCI6MjEwNjE0NTQ1MH0.a5YtjwWX1D6-Cw8q9PAo0GOxYu6sj41rwNWyv2emh70'};
 /* ================================================================= */
 
-const APP_VERSION='v25 (stitch types)';
+const APP_VERSION='v26 (Order Care WhatsApp)';
 /* ---------- helpers ---------- */
 const $=(s,e=document)=>e.querySelector(s),
 esc=s=>String(s??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),
@@ -741,7 +743,7 @@ function nav(h){if(location.hash===h)route();else location.hash=h}
 function go(s,v){nav(`#/${s}/${v||'dash'}`)}
 function route(){if(!me||!DB[1])return;const d=$('#dlg');if(d.open)d.close();
  const p=location.hash.replace(/^#\/?/,'').split('/');
- if(p[0]==='1'||p[0]==='2'){site=+p[0];const v=p[1]||'dash';view=(v==='dash'||v==='set'||(v==='wa'&&site===1&&canWA())||(M[v]&&M[v].site===site))?v:'dash';draw()}
+ if(p[0]==='1'||p[0]==='2'){site=+p[0];const v=p[1]||'dash';view=(v==='dash'||v==='set'||(v==='wa'&&canWA())||(M[v]&&M[v].site===site))?v:'dash';draw()}
  else{site=null;home()}
  window.scrollTo(0,0)}
 function rerender(){if(!me||!DB[1])return loginView();if(site)draw();else home()}
@@ -768,7 +770,7 @@ function draw(){document.body.className='s'+site;const S=SITES[site],other=site=
  $('#app').innerHTML=`<div class="shell s${site}"><aside class="side" aria-label="Menu">
 <button class="brand" data-act="home" title="Back to the start screen">${mark()}<span><b>Rifah's Kaleidoscope</b></span></button>
 <div class="switch" role="group" aria-label="Choose website">${[1,2].map(n=>`<button class="${n===site?'on':''}" data-act="go" data-s="${n}" data-v="dash"${n===site?' aria-current="true"':''}>${ic(SITES[n].icon,18)}${SITES[n].name}</button>`).join('')}</div>
-<nav aria-label="${S.name}">${(site===1&&canWA()?[...S.nav,['wa','Send to WhatsApp','wa']]:S.nav).map(([k,l,i])=>{const c=navCount(k);return `<button class="nv${k===view?' on':''}" data-act="go" data-s="${site}" data-v="${k}"${k===view?' aria-current="page"':''}>${ic(i)}<span>${l}</span>${c.n?`<span class="cnt${c.er?' er':''}">${c.n}</span>`:''}</button>`}).join('')}</nav>
+<nav aria-label="${S.name}">${(canWA()?[...S.nav,['wa','Send to WhatsApp','wa']]:S.nav).map(([k,l,i])=>{const c=navCount(k);return `<button class="nv${k===view?' on':''}" data-act="go" data-s="${site}" data-v="${k}"${k===view?' aria-current="page"':''}>${ic(i)}<span>${l}</span>${c.n?`<span class="cnt${c.er?' er':''}">${c.n}</span>`:''}</button>`}).join('')}</nav>
 <div class="sfoot"><button class="nv${view==='set'?' on':''}" data-act="go" data-s="${site}" data-v="set">${ic('sliders')}<span>Settings</span></button>
 <div class="me"><span class="av">${ini}</span><div><b>${esc(me.name)}</b><small>${me.role}</small></div></div><p class="ver">${APP_VERSION}</p>
 <div class="srow">${themeBtn('sbtn')}<button class="sbtn" data-act="logout">${ic('logout',17)}<span>Log out</span></button></div></div></aside>
@@ -821,7 +823,7 @@ ${top.length>LIM?`<div class="hmore"><button class="btn sm" data-act="holdall" i
 function dash2(){const D=DB[2],st=stats2(),
  hero=`<section class="hero buti"><div><h2><span class="dot${st.total?' late':''}"></span>${st.total?`${st.total} ${st.total===1?'order needs':'orders need'} attention`:'Everything is taken care of'}</h2><p>${st.total?(st.express?`Start with the ${st.express} express ${st.express===1?'order':'orders'}.`:'Open a list below to update it.'):'No open issues in any list.'}</p></div>${rail(2)}</section>`,
  sheets=`<div class="sheets">${S2K.map(m=>{const t=D[m].length,o=st[m],pct=t?Math.round((t-o)/t*100):100;return `<button class="sheet" data-act="sheet" data-m="${m}" data-f="${o?'open':'all'}"><span class="ki">${ic(M[m].icon,19)}</span><b>${M[m].t}</b><span class="kv">${o}</span><small>open of ${t}</small><span class="prog" aria-label="${pct}% done"><u style="width:${pct}%"></u></span></button>`}).join('')}</div>`;
- return head()+hero+sheets+`<div class="sec"><h2>Quick add</h2><div class="row">${S2K.map(m=>`<button class="btn" data-act="add" data-m="${m}">${ic(M[m].icon,16)}<span>${M[m].s.charAt(0).toUpperCase()+M[m].s.slice(1)}</span></button>`).join('')}</div></div>`}
+ return head(canWA()?`<div class="pha row"><button class="btn btn-wa" data-act="go" data-s="2" data-v="wa">${ic('wa',18)}<span>Send to WhatsApp</span></button></div>`:'')+hero+sheets+`<div class="sec"><h2>Quick add</h2><div class="row">${S2K.map(m=>`<button class="btn" data-act="add" data-m="${m}">${ic(M[m].icon,16)}<span>${M[m].s.charAt(0).toUpperCase()+M[m].s.slice(1)}</span></button>`).join('')}</div></div>`}
 
 /* ---------- lists ---------- */
 const cnt=()=>`${shown} ${shown===1?'record':'records'}`;
@@ -1040,20 +1042,44 @@ function waDesk(){if(!canWA())return;const t=$('#wa_txt').value.trim(),name=$('#
 function waWeb(){const w=window.open('https://web.whatsapp.com/','rk_whatsapp');if(!w)location.href='https://web.whatsapp.com/';$('#dlg').close()}
 async function waCopy(){const t=$('#wa_txt').value;copySync(t);toast('Message copied. Paste it in WhatsApp.')}
 
+/* ---------- Order Care report: each customer with their issue, as a table or a list ---------- */
+let waStyle='table';
+function careRows(){const D=DB[2],S=s=>String(s||'').trim(),rank={Pending:0,Waiting:0,Open:0,Stitching:1,'In progress':1,Ready:2,Dispatched:3,Delivered:4};
+ return [
+ {m:'courier',e:'⚠️',t:'COURIER ISSUES',rows:D.courier.filter(r=>!isDone('courier',r)).map(r=>[S(r.name),S(r.problem)||'Issue',S(r.ticket)==='Yes'?'Ticket':'No ticket'])},
+ {m:'express',e:'⚡',t:'EXPRESS ORDERS',rows:D.express.filter(r=>!isDone('express',r)).map(r=>[S(r.name),[S(r.product),S(r.size)].filter(Boolean).join(' ')||'Order',S(r.dispatch)?'By '+dayShort(S(r.dispatch)):S(r.status)||'Pending'])},
+ {m:'delays',e:'✂️',t:'STITCHING DELAYS',rows:D.delays.filter(r=>!isDone('delays',r)).map(r=>[S(r.cust),S(r.stock)||('Order '+S(r.order)),S(r.progress)||'Waiting'])},
+ {m:'exch',e:'🔁',t:'EXCHANGES & DISPUTES',rows:D.exch.filter(r=>!isDone('exch',r)).map(r=>[S(r.name),S(r.issue)||S(r.pkg)||S(r.stock)||'Exchange',S(r.process)||'Pending'])},
+ {m:'intl',e:'🌍',t:'INTERNATIONAL ORDERS',rows:D.intl.filter(r=>!isDone('intl',r)).map(r=>{const left=(r.items||[]).filter(i=>!M.intl.done.includes(i.process)),worst=left.reduce((w,i)=>(rank[i.process]??0)<(rank[w]??9)?i.process:w,'Delivered');
+  return [S(r.name),`${left.length} ${left.length===1?'design':'designs'} left`,worst||'Pending']})}]}
+const dayShort=s=>{const m=/^(mon|tue|wed|thu|fri|sat|sun)[a-z]*$/i.exec(s);return m?m[1].charAt(0).toUpperCase()+m[1].slice(1,3).toLowerCase():s};
+function pad(s,n){s=String(s);return s.length>n?s.slice(0,n-1)+'…':s+' '.repeat(n-s.length)}
+function careReportText(style){const secs=careRows(),total=secs.reduce((t,x)=>t+x.rows.length,0);
+ const _d=new Date(),dt=`${_d.toLocaleDateString('en-IN',{weekday:'short'})} ${_d.getDate()} ${_d.toLocaleDateString('en-IN',{month:'short'})} ${_d.getFullYear()}`,line='━━━━━━━━━━━━━━';
+ const out=[`*RIFAH'S KALEIDOSCOPE*`,`_Order Care report, ${dt}_`,line,`📋 *Open: ${total}*`,...secs.map(x=>`${x.e} ${x.t.charAt(0)+x.t.slice(1).toLowerCase()}: *${x.rows.length}*`),line];
+ secs.forEach(x=>{out.push(`${x.e} *${x.t} (${x.rows.length})*`);
+  if(!x.rows.length){out.push('✅ _All done_','');return}
+  if(style==='table'){const W=[11,12,9];out.push('```'+[pad('NAME',W[0]),pad('ISSUE',W[1]),'STATUS'].join(' ')+'\n'+'-'.repeat(W[0]+W[1]+W[2]+2)+'\n'+x.rows.map((r,i)=>[pad(r[0],W[0]),pad(r[1],W[1]),pad(r[2],W[2]).trimEnd()].join(' ')).join('\n')+'```')}
+  else out.push(x.rows.map(r=>`• *${r[0]}* – ${r[1]} _(${r[2]})_`).join('\n'));
+  out.push('')});
+ out.push(line,`_Sent from Order Care_`);return out.join('\n')}
+const curReport=()=>site===2?careReportText(waStyle):reportText();
+
 /* ---------- "Send to WhatsApp" tab: preview + copy as text (admin and staff) ---------- */
-function waFmt(t){return esc(t).replace(/\*([^*\n]+)\*/g,'<b>$1</b>').replace(/(^|[\s(])_([^_\n]+)_/g,'$1<i>$2</i>').replace(/\n/g,'<br>')}
-function waPage(){if(!canWA())return '';const t=reportText();
- return `<div class="ph"><div><h1>Send to WhatsApp</h1><p>Today’s report: unstitched, stitched, stitching unit, low stock and overdue parcels. Copy it and paste it in WhatsApp.</p></div></div>
+function waFmt(t){return String(t).split('```').map((p,i,a)=>i%2?`<code class="mono">${esc(p)}</code>`:waFmt1(i>0?p.replace(/^\n/,''):p)).join('')}
+function waFmt1(t){return esc(t).replace(/\*([^*\n]+)\*/g,'<b>$1</b>').replace(/(^|[\s(])_([^_\n]+)_/g,'$1<i>$2</i>').replace(/\n/g,'<br>')}
+function waPage(){if(!canWA())return '';const t=curReport();
+ return `<div class="ph"><div><h1>Send to WhatsApp</h1><p>${site===2?'Every open customer in Order Care with their issue and status.':'Today’s report: unstitched, stitched, stitching unit, low stock and overdue parcels.'} Copy it and paste it in WhatsApp.</p></div></div>
 <div class="wagrid"><section class="card pad"><div class="htools"><div><h2 style="font-size:25px">Preview</h2><p class="cs" style="margin:3px 0 0">This is how it will look in WhatsApp.</p></div><button class="btn sm" data-act="warefresh">${ic('repeat',15)}<span>Refresh</span></button></div>
 <div class="wachat"><div class="wabubble" id="wa_prev">${waFmt(t)}</div></div></section>
 <aside class="card pad wacopy"><h2 style="font-size:25px">Copy and send</h2>
-<button class="btn btn-wa big" data-act="wacopytab" id="wacopybtn">${ic('list',18)}<span>Copy as text</span></button>
+${site===2?`<div class="fld"><label>Format</label><div class="chips">${[['table','Table'],['list','List']].map(([k,l])=>`<button class="chip${waStyle===k?' on':''}" data-act="wastyle" data-st="${k}" aria-pressed="${waStyle===k}">${l}</button>`).join('')}</div><span class="hint">${waStyle==='table'?'Neat columns. Long names are shortened to fit a phone screen.':'One line per customer with full names and issues.'}</span></div>`:''}<button class="btn btn-wa big" data-act="wacopytab" id="wacopybtn">${ic('list',18)}<span>Copy as text</span></button>
 <div class="copied" id="wa_ok" hidden>${ic('check',20)}<b>Copied!</b></div>
 
 <details class="how"><summary><b>Edit the text first</b></summary><textarea id="wa_txt" rows="14" class="watxt" style="margin-top:12px">${esc(t)}</textarea><p class="hint">Changes show in the preview and are copied.</p></details></aside></div>`}
 async function copyText(t){try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(t);return true}}catch(e){}
  const a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(a);a.select();a.setSelectionRange(0,t.length);let ok=false;try{ok=document.execCommand('copy')}catch(e){}a.remove();return ok}
-async function waCopyTab(b){const t=($('#wa_txt')||{}).value||reportText();const ok=await copyText(t);
+async function waCopyTab(b){const t=($('#wa_txt')||{}).value||curReport();const ok=await copyText(t);
  if(ok){const o=$('#wa_ok');if(o){o.hidden=false;clearTimeout(o._t);o._t=setTimeout(()=>o.hidden=true,4000)}toast('Copied. Paste it in WhatsApp and send.')}
  else{const d=$('details.how');if(d)d.open=true;const a=$('#wa_txt');if(a){a.focus();a.select()}toast('Could not copy automatically. The text is selected: press Ctrl + C.','er')}}
 
@@ -1214,7 +1240,7 @@ rmimg:()=>{$('#imgwrap').dataset.rm='1';const p=$('#imgprev');if(p)p.remove()},
 additem:()=>{draftItems.push(blankItem());refreshItems();const f=$('#i'+(draftItems.length-1)+'n');if(f)f.focus()},
 rmitem:b=>{draftItems.splice(+b.dataset.i,1);if(!draftItems.length)draftItems.push(blankItem());refreshItems()},
 backup:()=>backup(),restore:()=>{if(!canCare())return toast('Only the admin can restore a backup.','er');$('#rf').click()},
-wa:()=>waOpen(),wasend:()=>waSend(),wacopy:()=>waCopy(),wadesk:()=>waDesk(),waweb:()=>waWeb(),wacopytab:b=>waCopyTab(b),warefresh:()=>{draw();toast('Report updated')},
+wa:()=>waOpen(),wasend:()=>waSend(),wacopy:()=>waCopy(),wadesk:()=>waDesk(),waweb:()=>waWeb(),wacopytab:b=>waCopyTab(b),warefresh:()=>{draw();toast('Report updated')},wastyle:b=>{waStyle=b.dataset.st;draw()},
 cleanmo:b=>{cleanMonths=+b.dataset.mo;draw()},cleanask:()=>cleanAsk(),cleango:b=>cleanGo(b),restmerge:b=>restMerge(b),restall:b=>restAll(b),
 peek:b=>{const i=b.parentNode.querySelector('input');i.type=i.type==='password'?'text':'password';b.setAttribute('aria-label',i.type==='password'?'Show password':'Hide password')}};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const f=ACT[b.dataset.act];if(f){e.preventDefault();f(b,e)}});
