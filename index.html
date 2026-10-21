@@ -494,6 +494,12 @@ kbd{font:700 13px/1 var(--sans);padding:4px 8px;border-radius:7px;border:1.5px s
 @media(max-width:1100px){.wagrid{grid-template-columns:1fr}.wacopy{position:static;order:-1}}
 .wabubble .mono{display:block;max-width:100%;white-space:pre;overflow-x:auto;font:12.5px/1.5 ui-monospace,Menlo,Consolas,'Courier New',monospace;margin:4px 0}
 @media(max-width:480px){.wabubble .mono{font-size:10.5px}.wachat{padding:10px}}
+
+/* low stock limit control */
+.lowctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 16px;padding:12px;border-radius:16px;background:var(--sf2)}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper input{width:76px;min-height:42px;text-align:center;font-weight:800;padding:8px}
+.stepper .ib{font:800 20px/1 var(--sans)}
 /* ---------- extra polish for every screen size ---------- */
 @media(max-width:1200px){.sheets{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(min-width:721px) and (max-width:1100px){
@@ -547,7 +553,7 @@ kbd{font:700 13px/1 var(--sans);padding:4px 8px;border-radius:7px;border:1.5px s
 const SB={url:'https://jeyyeqvexpzoylsrdlmk.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpleXllcXZleHB6b3lsc3JkbG1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1Njk0NTAsImV4cCI6MjEwNjE0NTQ1MH0.a5YtjwWX1D6-Cw8q9PAo0GOxYu6sj41rwNWyv2emh70'};
 /* ================================================================= */
 
-const APP_VERSION='v26 (Order Care WhatsApp)';
+const APP_VERSION='v27 (low stock limit)';
 /* ---------- helpers ---------- */
 const $=(s,e=document)=>e.querySelector(s),
 esc=s=>String(s??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),
@@ -655,6 +661,10 @@ const intlDone=r=>(r.items||[]).length>0&&r.items.every(i=>M.intl.done.includes(
 const isDone=(m,r)=>m==='intl'?intlDone(r):M[m].done.includes(r[M[m].st]);
 /* stitch type group: U = Unstitched, S = Stitched, O = Others (anything else, e.g. older 'Stitched Without Pant & Duppatta') */
 const stG=s=>{const v=String(s||'').trim().toLowerCase();return v==='unstitched'?'U':v==='stitched'?'S':'O'};
+/* Low stock limit: mode 'below' = at or below N (pieces in hand), 'above' = at or above N. Saved for everyone. */
+const lowCfg=()=>{const c=Object.assign({mode:'below',n:3},(DB[1]&&DB[1].meta&&DB[1].meta.low)||{});c.n=Math.max(0,Math.min(9999,parseInt(c.n)||0));if(c.mode!=='above')c.mode='below';return c};
+const lowMatch=(v,c)=>c.mode==='above'?v>=c.n&&v>0:v>0&&v<=c.n;
+const lowLabel=c=>(c.mode==='above'?'at or above ':'at or below ')+c.n;
 const isOver=r=>!['Delivered','Returned'].includes(r.status)&&!!r.disp&&daysSince(r.disp)>=25;
 const pr=n=>{const s=(DB[1].stock||[]).find(s=>s.name===n);return s?(+s.price||0):0};
 
@@ -798,15 +808,17 @@ function dash1(){const D=DB[1],
  const hold=holdS+holdU+holdO,
  hero=`<section class="hero buti"><div><h2><span class="dot${od.length?' late':''}"></span>${od.length?`${od.length} ${od.length===1?'parcel is':'parcels are'} overdue`:'All parcels are on time'}</h2><p>${od.length?'Dispatched 25 or more days ago and not delivered yet. Check with the courier.':`You are holding ${hold} ${hold===1?'piece':'pieces'} of ${top.length} ${top.length===1?'design':'designs'}.`}</p></div>${rail(1)}</section>`,
  kp=`<div class="kpis k3">${kpi('dress','Pieces in holding',hold,`${holdS} stitched, ${holdU} unstitched${holdO?`, ${holdO} others`:''}`,{go:'reg'})}${kpi('truck','On the way',open.length,'Parcels not delivered yet',{go:'del'})}${kpi('clock','Overdue',od.length,'25+ days since dispatch',{late:od.length>0,go:'del'})}</div>`,
- lowAt=3,byU={},
- low=(D.reg.forEach(r=>{if(String(r.stitch||'').trim().toLowerCase()!=='unstitched')return;const k=r.name||'Unnamed';byU[k]=(byU[k]||0)+(+r.in||0)-(+r.out||0)}),Object.entries(byU).filter(([,v])=>v>0&&v<=lowAt).sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0]))),
+ lowC=lowCfg(),byU={},
+ low=(D.reg.forEach(r=>{if(String(r.stitch||'').trim().toLowerCase()!=='unstitched')return;const k=r.name||'Unnamed';byU[k]=(byU[k]||0)+(+r.in||0)-(+r.out||0)}),Object.entries(byU).filter(([,v])=>lowMatch(v,lowC)).sort((a,b)=>(lowC.mode==='above'?b[1]-a[1]:a[1]-b[1])||a[0].localeCompare(b[0]))),
  oos=D.oos||[],
  tabs=[['where','Where your pieces are','box'],['hold','Holding by design','dress'],['low','Low stock','alert',low.length+oos.length],['del','Deliveries','truck']],
  seg=`<div class="seg" role="tablist" aria-label="Dashboard views">${tabs.map(([k,l,i,n])=>`<button role="tab" aria-selected="${dashTab===k}" class="${dashTab===k?'on':''}" data-act="tab" data-t="${k}">${ic(i,18)}<span>${l}</span>${n?`<span class="tcnt">${n}</span>`:''}</button>`).join('')}</div>`;
  let body;
- if(dashTab==='low'){const tile=([l,v])=>`<button class="dt ${v<=0?'out':'low'}" data-act="holdgo" data-n="${esc(l)}"><span class="dr"><span class="dn">${esc(l)}</span><b>${v<=0?0:v}</b></span><small>${v===1?'1 unstitched left':v+' unstitched left'}</small></button>`;
-  body=`<section class="card pad"><div class="htools"><div><h2 style="font-size:25px">Running low</h2><p class="cs" style="margin:3px 0 0">Unstitched designs with ${lowAt} or fewer pieces in hand, lowest first. Tap a design to see its entries.</p></div><span class="b wn">${low.length} ${low.length===1?'design':'designs'}</span></div>
-${low.length?`<div class="dgrid">${low.map(tile).join('')}</div>`:`<div class="lr"><div><b>No unstitched design is running low</b><small>Every unstitched design has more than ${lowAt} pieces, or none in hand.</small></div><span class="b ok">All good</span></div>`}</section>
+ if(dashTab==='low'){const tile=([l,v])=>`<button class="dt ${v<=0?'out':'low'}" data-act="holdgo" data-n="${esc(l)}"><span class="dr"><span class="dn">${esc(l)}</span><b>${v<=0?0:v}</b></span><small>${v===1?'1 unstitched':v+' unstitched'} in hand</small></button>`;
+  body=`<section class="card pad"><div class="htools"><div><h2 style="font-size:25px">Unstitched ${lowLabel(lowC)}</h2><p class="cs" style="margin:3px 0 0">Unstitched designs with ${lowC.mode==='above'?`${lowC.n} or more`:`${lowC.n} or fewer`} pieces in hand, ${lowC.mode==='above'?'highest':'lowest'} first. Tap a design to see its entries.</p></div><span class="b wn">${low.length} ${low.length===1?'design':'designs'}</span></div>
+<div class="lowctl"><div class="chips" role="group" aria-label="Show designs">${[['below','At or below'],['above','At or above']].map(([k,l])=>`<button class="chip${lowC.mode===k?' on':''}" data-act="lowmode" data-mode="${k}" aria-pressed="${lowC.mode===k}">${l}</button>`).join('')}</div>
+<div class="stepper"><button class="ib" data-act="lowstep" data-d="-1" aria-label="Decrease">−</button><input id="lown" type="number" min="0" max="9999" inputmode="numeric" value="${lowC.n}" aria-label="Number of pieces"><button class="ib" data-act="lowstep" data-d="1" aria-label="Increase">+</button></div><span class="mu" style="font-size:13.5px">pieces</span></div>
+${low.length?`<div class="dgrid">${low.map(tile).join('')}</div>`:`<div class="lr"><div><b>No unstitched design ${lowLabel(lowC)}</b><small>Try a different number above.</small></div><span class="b ok">None</span></div>`}</section>
 <section class="card pad" style="margin-top:16px"><div class="htools"><div><h2 style="font-size:25px">Out of stock</h2><p class="cs" style="margin:3px 0 0">Designs you mark yourself. This list does not change the stock register.</p></div><button class="btn btn-pri sm" data-act="add" data-m="oos">${ic('plus',16)}<span>Add design</span></button></div>
 ${oos.length?`<div class="dgrid">${[...oos].sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(r=>`<button class="dt out" data-act="edit" data-m="oos" data-id="${r.id}"><span class="dr"><span class="dn">${esc(r.name)}</span>${ic('pencil',15)}</span><small>${r.date?'Since '+fd(r.date):'Out of stock'}</small>${r.notes?`<span class="onote">${esc(r.notes)}</span>`:''}</button>`).join('')}</div>`:`<div class="lr"><div><b>Nothing marked out of stock</b><small>Tap "Add design" to mark one. Tap a design later to edit or remove it.</small></div></div>`}</section>`}
  else if(dashTab==='where')body=`<div class="places">${kpi('dress','Stitched',holdS,'Ready-stitched pieces in hand')}${kpi('tag','Unstitched',holdU,'Fabric sets not stitched yet')}${kpi('spark','Others',holdO,'Other stitch types')}${kpi('scissors','At the stitching unit',unit,'Sent there, not back yet')}${kpi('box','Packed',packed,'Ready to send')}${kpi('inbox','Not packed yet',unpacked,'Still to pack')}</div>`;
@@ -901,6 +913,9 @@ async function sv(m,id){const c=M[m],v={},btn=$('#svb');let bad=null;
  v.by=me.name;v.at=today();
  const ok=await mut(c.site,D=>{const r=id&&D[m].find(x=>x.id===id);if(r)Object.assign(r,v);else D[m].push({id:uid(),...v})},id?'Changes saved':'Added');
  if(ok){$('#dlg').close();rerender()}else busy(btn,false)}
+async function lowSave(ch){const c=Object.assign(lowCfg(),ch);c.n=Math.max(0,Math.min(9999,parseInt(c.n)||0));
+ DB[1].meta=DB[1].meta||{};DB[1].meta.low={mode:c.mode,n:c.n};draw();
+ clearTimeout(lowSave.t);lowSave.t=setTimeout(()=>mut(1,D=>{D.meta.low={mode:c.mode,n:c.n}},'Low stock limit saved'),500)}
 async function delRec(b){if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Tap again to delete';clearTimeout(b._t);b._t=setTimeout(()=>{b.classList.remove('armed');b.textContent='Delete'},4000);return}
  clearTimeout(b._t);const m=b.dataset.m,id=b.dataset.id,s=M[m].site;busy(b,true,'Deleting…');
  const ok=await mut(s,D=>{D[m]=D[m].filter(x=>x.id!==id)},'Deleted');
@@ -995,17 +1010,17 @@ function reportText(){const R=DB[1].reg,U={},S={},O={},SU={};let tU=0,tS=0,tO=0,
  const sizes=o=>{const sz=Object.entries(o.sz).filter(([,v])=>v>0);if(!sz.length||(sz.length===1&&/^custom$/i.test(sz[0][0])))return '';return ' _'+sz.map(([s,v])=>sz.length>1||v>1?`${s}×${v}`:s).join(', ')+'_'};
  const list=G=>{const a=Object.entries(G).filter(([,o])=>o.n>0).sort((x,y)=>y[1].n-x[1].n||x[0].localeCompare(y[0]));return a.length?a.map(([k,o])=>`• ${k} – *${o.n}*${sizes(o)}`).join('\n'):'_None in hand_'};
  const byU={};R.forEach(r=>{if(String(r.stitch||'').trim().toLowerCase()!=='unstitched')return;const k=r.name||'Unnamed';byU[k]=(byU[k]||0)+(+r.in||0)-(+r.out||0)});
- const low=Object.entries(byU).filter(([,v])=>v>0&&v<=3).sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0])),oos=(DB[1].oos||[]).map(r=>r.name).filter(Boolean);
+ const lc=lowCfg(),low=Object.entries(byU).filter(([,v])=>lowMatch(v,lc)).sort((a,b)=>(lc.mode==='above'?b[1]-a[1]:a[1]-b[1])||a[0].localeCompare(b[0])),oos=(DB[1].oos||[]).map(r=>r.name).filter(Boolean);
  const su=Object.entries(SU).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]),od=DB[1].del.filter(isOver).sort((a,b)=>String(a.disp).localeCompare(String(b.disp)));
  const sd=s=>isISO(s)?new Date(s+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'}):s;
  const _d=new Date(),dt=`${_d.toLocaleDateString('en-IN',{weekday:'short'})} ${_d.getDate()} ${_d.toLocaleDateString('en-IN',{month:'short'})} ${_d.getFullYear()}`,line='━━━━━━━━━━━━━━';
  return [`*RIFAH'S KALEIDOSCOPE*`,`_Holding report, ${dt}_`,line,
- `📦 *In hand: ${tU+tS+tO} pieces*`,`🧵 Unstitched: *${tU}*`,`👗 Stitched: *${tS}*`,...(tO?[`🧩 Others: *${tO}*`]:[]),`✂️ At stitching unit: *${Math.max(0,tSU)}*`,`⚠️ Low stock: *${low.length}*`,`🚚 Overdue parcels: *${od.length}*`,line,
+ `📦 *In hand: ${tU+tS+tO} pieces*`,`🧵 Unstitched: *${tU}*`,`👗 Stitched: *${tS}*`,...(tO?[`🧩 Others: *${tO}*`]:[]),`✂️ At stitching unit: *${Math.max(0,tSU)}*`,(lc.mode==='above'?`📈 Unstitched ${lc.n}+: *${low.length}*`:`⚠️ Low stock: *${low.length}*`),`🚚 Overdue parcels: *${od.length}*`,line,
  `🧵 *UNSTITCHED (${tU})*`,list(U),'',
  `👗 *STITCHED (${tS})*`,list(S),'',
  ...(tO?[`🧩 *OTHERS (${tO})*`,list(O),'']:[]),
  `✂️ *AT THE STITCHING UNIT (${Math.max(0,tSU)})*`,su.length?su.map(([k,v])=>`• ${k} – *${v}*`).join('\n'):'_Nothing at the stitching unit_','',
- `⚠️ *LOW STOCK (unstitched, 3 or less)*`,low.length?low.map(([k,v])=>`• ${k} – *${v} left*`).join('\n'):'_Nothing running low_',
+ (lc.mode==='above'?`📈 *UNSTITCHED AT OR ABOVE ${lc.n}*`:`⚠️ *LOW STOCK (unstitched, at or below ${lc.n})*`),low.length?low.map(([k,v])=>`• ${k} – *${v} ${lc.mode==='above'?'in hand':'left'}*`).join('\n'):(lc.mode==='above'?'_None_':'_Nothing running low_'),
  ...(oos.length?['',`🚫 *MARKED OUT OF STOCK*`,oos.map(n=>`• ${n}`).join('\n')]:[]),'',
  `🚚 *OVERDUE PARCELS (25+ days)*`,od.length?od.map(r=>`• ${r.cust} – *${daysSince(r.disp)} days*\n   _Sent ${sd(r.disp)}${r.track?', '+r.track:''}${r.status?', '+r.status:''}_`).join('\n'):'✅ _None, all parcels on time_',
  line,`_Sent from Stock Studio_`].join('\n')}
@@ -1232,6 +1247,8 @@ add:b=>openEdit(b.dataset.m),edit:b=>openEdit(b.dataset.m,b.dataset.id),del:b=>d
 photo:b=>showImg(b.dataset.id),close:()=>$('#dlg').close(),
 chip:b=>{F[b.dataset.m]=b.dataset.f;refresh(b.dataset.m)},
 tab:b=>{dashTab=b.dataset.t;draw()},
+lowmode:b=>lowSave({mode:b.dataset.mode}),
+lowstep:b=>lowSave({n:lowCfg().n+(+b.dataset.d)}),
 holdall:()=>{holdAll=!holdAll;draw()},
 holdgo:b=>{Q.reg=b.dataset.n;go(1,'reg')},
 csv:b=>csv(b.dataset.m),theme:()=>theme(),logout:()=>logout(),
@@ -1244,7 +1261,7 @@ wa:()=>waOpen(),wasend:()=>waSend(),wacopy:()=>waCopy(),wadesk:()=>waDesk(),wawe
 cleanmo:b=>{cleanMonths=+b.dataset.mo;draw()},cleanask:()=>cleanAsk(),cleango:b=>cleanGo(b),restmerge:b=>restMerge(b),restall:b=>restAll(b),
 peek:b=>{const i=b.parentNode.querySelector('input');i.type=i.type==='password'?'text':'password';b.setAttribute('aria-label',i.type==='password'?'Show password':'Hide password')}};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const f=ACT[b.dataset.act];if(f){e.preventDefault();f(b,e)}});
-document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.pn[data-act]')){e.preventDefault();ACT.photo(e.target)}if(e.key==='Escape')toggleNav(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='lown'){e.preventDefault();lowSave({n:e.target.value});return}if((e.key==='Enter'||e.key===' ')&&e.target.matches('.pn[data-act]')){e.preventDefault();ACT.photo(e.target)}if(e.key==='Escape')toggleNav(false)});
 document.addEventListener('input',e=>{const t=e.target;
  if(t.dataset.q){Q[t.dataset.q]=t.value;refresh(t.dataset.q);return}
  if(t.id==='wa_txt'&&$('#wa_prev')){$('#wa_prev').innerHTML=waFmt(t.value);return}
@@ -1252,7 +1269,7 @@ document.addEventListener('input',e=>{const t=e.target;
  if(t.dataset.i!=null&&draftItems[+t.dataset.i]){draftItems[+t.dataset.i][t.dataset.k]=t.dataset.k==='qty'?(+t.value||0):t.value;if(t.dataset.k==='name'||t.dataset.k==='qty')updTotal()}
  if(t.getAttribute('aria-invalid')==='true')t.setAttribute('aria-invalid','false')});
 document.addEventListener('submit',e=>{if(e.target.id==='pwf'){e.preventDefault();chpw()}});
-document.addEventListener('change',e=>{if(e.target.id==='rf')restore(e.target);if(e.target.closest&&e.target.closest('#cleancats')){const t=e.target;if(t.checked)cleanOff.delete(t.value);else cleanOff.add(t.value);cleanTotal()}});
+document.addEventListener('change',e=>{if(e.target.id==='lown'){lowSave({n:e.target.value});return}if(e.target.id==='rf')restore(e.target);if(e.target.closest&&e.target.closest('#cleancats')){const t=e.target;if(t.checked)cleanOff.delete(t.value);else cleanOff.add(t.value);cleanTotal()}});
 $('#dlg').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.close()}); // tap outside to close
 window.addEventListener('hashchange',route);
 const netChange=()=>{const o=$('#offl');if(o)o.hidden=navigator.onLine;if(navigator.onLine)toast('Back online')};
